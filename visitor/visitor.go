@@ -13,12 +13,12 @@ import (
 
 type ReplVisitor struct {
 	compiler.BaseTSwiftLanguageVisitor
-	ReplContext *repl.ReplContext
+	ScopeTrace *repl.ScopeTrace
 }
 
 func NewVisitor() *ReplVisitor {
 	return &ReplVisitor{
-		ReplContext: repl.NewReplContext(),
+		ScopeTrace: repl.NewScopeTrace(),
 	}
 }
 
@@ -65,7 +65,7 @@ func (v *ReplVisitor) VisitTypeValueDecl(ctx *compiler.TypeValueDeclContext) int
 	varType := ctx.Primitive_type().GetText()
 	varValue := v.Visit(ctx.Expr()).(value.IVOR)
 
-	variable := v.ReplContext.ScopeTrace.CurrentScope.AddVariable(varName, varType, varValue, isConst)
+	variable := v.ScopeTrace.AddVariable(varName, varType, varValue, isConst)
 
 	ok, msg := variable.Validate()
 
@@ -84,7 +84,7 @@ func (v *ReplVisitor) VisitValueDecl(ctx *compiler.ValueDeclContext) interface{}
 	varValue := v.Visit(ctx.Expr()).(value.IVOR)
 	varType := varValue.Type()
 
-	variable := v.ReplContext.ScopeTrace.CurrentScope.AddVariable(varName, varType, varValue, isConst)
+	variable := v.ScopeTrace.AddVariable(varName, varType, varValue, isConst)
 
 	ok, msg := variable.Validate()
 
@@ -103,7 +103,7 @@ func (v *ReplVisitor) VisitTypeDecl(ctx *compiler.TypeDeclContext) interface{} {
 	varName := ctx.ID().GetText()
 	varType := ctx.Primitive_type().GetText()
 
-	variable := v.ReplContext.ScopeTrace.CurrentScope.AddVariable(varName, varType, value.DefaultNilValue, isConst)
+	variable := v.ScopeTrace.AddVariable(varName, varType, value.DefaultNilValue, isConst)
 
 	ok, msg := variable.Validate()
 
@@ -120,7 +120,7 @@ func (v *ReplVisitor) VisitAssign(ctx *compiler.AssignContext) interface{} {
 	varName := ctx.ID().GetText()
 	varValue := v.Visit(ctx.Expr()).(value.IVOR)
 
-	variable := v.ReplContext.ScopeTrace.CurrentScope.GetVariable(varName)
+	variable := v.ScopeTrace.GetVariable(varName)
 
 	if variable == nil {
 		log.Fatal("Variable not found")
@@ -150,7 +150,6 @@ func (v *ReplVisitor) VisitIntLiteral(ctx *compiler.IntLiteralContext) interface
 	fmt.Println(a.Type())
 
 	return a
-
 }
 
 func (v *ReplVisitor) VisitFloatLiteral(ctx *compiler.FloatLiteralContext) interface{} {

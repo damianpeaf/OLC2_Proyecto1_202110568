@@ -28,7 +28,7 @@ func main() {
 		replVisitor := visitor.NewVisitor()
 		replVisitor.Visit(tree)
 
-		replVisitor.ReplContext.ScopeTrace.Print()
+		replVisitor.ScopeTrace.Print()
 
 		return c.SendString("compiled")
 

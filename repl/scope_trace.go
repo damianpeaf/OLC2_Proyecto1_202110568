@@ -91,6 +91,14 @@ func (s *ScopeTrace) PopScope() {
 	s.CurrentScope = s.CurrentScope.Parent()
 }
 
+func (s *ScopeTrace) AddVariable(name string, varType string, value value.IVOR, isConst bool) *Variable {
+	return s.CurrentScope.AddVariable(name, varType, value, isConst)
+}
+
+func (s *ScopeTrace) GetVariable(name string) *Variable {
+	return s.CurrentScope.GetVariable(name)
+}
+
 func (s *ScopeTrace) Print() {
 
 	fmt.Println("Global Scope")
