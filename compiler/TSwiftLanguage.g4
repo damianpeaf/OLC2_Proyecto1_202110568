@@ -43,11 +43,13 @@ expr:
 		| LESS_THAN_OR_EQUAL
 		| GREATER_THAN
 		| GREATER_THAN_OR_EQUAL
-	) right = expr				# BinaryExp // a < b | a <= b | a > b | a >= b
-	| op = (NOT | MINUS) expr	# UnaryExp // !a | -a
-	| LPAREN expr RPAREN		# ParenExp // (a)
-	| ID						# IdExp // a
-	| literal					# LiteralExp;
+	) right = expr						# BinaryExp // a < b | a <= b | a > b | a >= b
+	| left = expr op = AND right = expr	# BinaryExp // a && b
+	| left = expr op = OR right = expr	# BinaryExp // a || b
+	| op = (NOT | MINUS) expr			# UnaryExp // !a | -a
+	| LPAREN expr RPAREN				# ParenExp // (a)
+	| ID								# IdExp // a
+	| literal							# LiteralExp;
 // StructMethodCallExp, StructPropertyCallExp, FunctionCallExp, vector, matrix;  (++, --)?
 
 if_stmt: IF_KW expr LBRACE stmt* RBRACE;

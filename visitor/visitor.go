@@ -209,7 +209,23 @@ func (v *ReplVisitor) VisitUnaryExp(ctx *compiler.UnaryExpContext) interface{} {
 }
 
 func (v *ReplVisitor) VisitBinaryExp(ctx *compiler.BinaryExpContext) interface{} {
-	return v.VisitChildren(ctx)
+
+	left := v.Visit(ctx.GetLeft()).(value.IVOR)
+	right := v.Visit(ctx.GetRight()).(value.IVOR)
+
+	strat, ok := repl.BinaryStrats[ctx.GetOp().GetText()]
+
+	if !ok {
+		log.Fatal("Binary operator not found")
+	}
+
+	ok, msg, result := strat.Validate(left, right)
+
+	if !ok {
+		log.Fatal(msg)
+	}
+
+	return result
 }
 
 func (v *ReplVisitor) VisitIf_stmt(ctx *compiler.If_stmtContext) interface{} {

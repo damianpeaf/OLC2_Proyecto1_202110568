@@ -2,7 +2,7 @@ package value
 
 const (
 	IVOR_INT       = "Int"
-	IVOR_FLOAT     = "Double"
+	IVOR_FLOAT     = "Float"
 	IVOR_STRING    = "String"
 	IVOR_BOOL      = "Bool"
 	IVOR_CHARACTER = "Character"
