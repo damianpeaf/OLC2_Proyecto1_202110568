@@ -46,8 +46,23 @@ type TSwiftLanguageVisitor interface {
 	// Visit a parse tree produced by TSwiftLanguage#BoolLiteral.
 	VisitBoolLiteral(ctx *BoolLiteralContext) interface{}
 
-	// Visit a parse tree produced by TSwiftLanguage#expr.
-	VisitExpr(ctx *ExprContext) interface{}
+	// Visit a parse tree produced by TSwiftLanguage#NilLiteral.
+	VisitNilLiteral(ctx *NilLiteralContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#LiteralExp.
+	VisitLiteralExp(ctx *LiteralExpContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#IdExp.
+	VisitIdExp(ctx *IdExpContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#ParenExp.
+	VisitParenExp(ctx *ParenExpContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#UnaryExp.
+	VisitUnaryExp(ctx *UnaryExpContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#BinaryExp.
+	VisitBinaryExp(ctx *BinaryExpContext) interface{}
 
 	// Visit a parse tree produced by TSwiftLanguage#if_stmt.
 	VisitIf_stmt(ctx *If_stmtContext) interface{}

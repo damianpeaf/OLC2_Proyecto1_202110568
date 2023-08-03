@@ -59,7 +59,27 @@ func (v *BaseTSwiftLanguageVisitor) VisitBoolLiteral(ctx *BoolLiteralContext) in
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseTSwiftLanguageVisitor) VisitExpr(ctx *ExprContext) interface{} {
+func (v *BaseTSwiftLanguageVisitor) VisitNilLiteral(ctx *NilLiteralContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitLiteralExp(ctx *LiteralExpContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitIdExp(ctx *IdExpContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitParenExp(ctx *ParenExpContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitUnaryExp(ctx *UnaryExpContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitBinaryExp(ctx *BinaryExpContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 

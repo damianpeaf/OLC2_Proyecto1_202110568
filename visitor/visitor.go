@@ -126,6 +126,7 @@ func (v *ReplVisitor) VisitAssign(ctx *compiler.AssignContext) interface{} {
 		log.Fatal("Variable not found")
 	}
 
+	// TODO: asign method
 	variable.Value = varValue
 
 	ok, msg := variable.Validate()
@@ -182,14 +183,33 @@ func (v *ReplVisitor) VisitBoolLiteral(ctx *compiler.BoolLiteralContext) interfa
 
 }
 
-func (v *ReplVisitor) VisitExpr(ctx *compiler.ExprContext) interface{} {
+func (v *ReplVisitor) VisitNilLiteral(ctx *compiler.NilLiteralContext) interface{} {
+	return value.DefaultNilValue
+}
 
-	if ctx.Literal() != nil {
-		return v.Visit(ctx.Literal())
-	}
+func (v *ReplVisitor) VisitLiteralExp(ctx *compiler.LiteralExpContext) interface{} {
+	return v.Visit(ctx.Literal())
+}
 
-	return nil
+func (v *ReplVisitor) VisitIdExp(ctx *compiler.IdExpContext) interface{} {
+	varName := ctx.ID().GetText()
 
+	// TODO: check if variable exists
+	variable := v.ScopeTrace.GetVariable(varName)
+
+	return variable.Value
+}
+
+func (v *ReplVisitor) VisitParenExp(ctx *compiler.ParenExpContext) interface{} {
+	return v.Visit(ctx.Expr())
+}
+
+func (v *ReplVisitor) VisitUnaryExp(ctx *compiler.UnaryExpContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *ReplVisitor) VisitBinaryExp(ctx *compiler.BinaryExpContext) interface{} {
+	return v.VisitChildren(ctx)
 }
 
 func (v *ReplVisitor) VisitIf_stmt(ctx *compiler.If_stmtContext) interface{} {
