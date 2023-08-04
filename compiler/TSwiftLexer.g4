@@ -45,7 +45,8 @@ CHARACTER_TYPE: 'Character';
 
 INTEGER_LITERAL: [0-9]+;
 FLOAT_LITERAL: [0-9]+ '.' [0-9]+;
-STRING_LITERAL: '"' .*? '"'; // SCAPED SEQUENCES?
+// STRING LITERAL WITH SCAPED SEQUENCES
+STRING_LITERAL: '"' (~["\r\n\\] | ESC_SEQ)* '"';
 BOOL_LITERAL: 'true' | 'false';
 NIL_LITERAL: 'nil';
 
@@ -63,6 +64,8 @@ MOD: '%';
 // Assignment operators
 
 EQUALS: '=';
+PLUS_EQUALS: '+=';
+MINUS_EQUALS: '-=';
 
 // Comparison operators
 
@@ -98,3 +101,5 @@ ARROW: '->';
 INTERROGATION: '?';
 
 // Error?
+
+fragment ESC_SEQ: '\\' [btnfr"'\\];

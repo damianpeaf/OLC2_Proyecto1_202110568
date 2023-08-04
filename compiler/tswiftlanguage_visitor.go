@@ -31,8 +31,14 @@ type TSwiftLanguageVisitor interface {
 	// Visit a parse tree produced by TSwiftLanguage#primitive_type.
 	VisitPrimitive_type(ctx *Primitive_typeContext) interface{}
 
-	// Visit a parse tree produced by TSwiftLanguage#Assign.
-	VisitAssign(ctx *AssignContext) interface{}
+	// Visit a parse tree produced by TSwiftLanguage#DirectAssign.
+	VisitDirectAssign(ctx *DirectAssignContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#ArithmeticAssign.
+	VisitArithmeticAssign(ctx *ArithmeticAssignContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#IdPattern.
+	VisitIdPattern(ctx *IdPatternContext) interface{}
 
 	// Visit a parse tree produced by TSwiftLanguage#IntLiteral.
 	VisitIntLiteral(ctx *IntLiteralContext) interface{}

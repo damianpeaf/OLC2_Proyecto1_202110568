@@ -1,7 +1,6 @@
 package visitor
 
 import (
-	"fmt"
 	"log"
 	"main/compiler"
 	"main/repl"
@@ -115,9 +114,9 @@ func (v *ReplVisitor) VisitTypeDecl(ctx *compiler.TypeDeclContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
-func (v *ReplVisitor) VisitAssign(ctx *compiler.AssignContext) interface{} {
+func (v *ReplVisitor) VisitDirectAssign(ctx *compiler.DirectAssignContext) interface{} {
 
-	varName := ctx.ID().GetText()
+	varName := v.Visit(ctx.Id_pattern()).(string)
 	varValue := v.Visit(ctx.Expr()).(value.IVOR)
 
 	variable := v.ScopeTrace.GetVariable(varName)
@@ -129,28 +128,54 @@ func (v *ReplVisitor) VisitAssign(ctx *compiler.AssignContext) interface{} {
 	// TODO: asign method
 	variable.Value = varValue
 
-	ok, msg := variable.Validate()
+	return v.VisitChildren(ctx)
+
+}
+
+func (v *ReplVisitor) VisitArithmeticAssign(ctx *compiler.ArithmeticAssignContext) interface{} {
+	varName := v.Visit(ctx.Id_pattern()).(string)
+
+	variable := v.ScopeTrace.GetVariable(varName)
+
+	if variable == nil {
+		log.Fatal("Variable not found")
+	}
+
+	leftValue := variable.Value
+	rightValue := v.Visit(ctx.Expr()).(value.IVOR)
+
+	op := string(ctx.GetOp().GetText()[0])
+
+	strat, ok := repl.BinaryStrats[op]
+
+	if !ok {
+		log.Fatal("Binary operator not found")
+	}
+
+	ok, msg, result := strat.Validate(leftValue, rightValue)
 
 	if !ok {
 		log.Fatal(msg)
 	}
 
-	return v.VisitChildren(ctx)
+	// TODO: asign method
+	variable.Value = result
 
+	return nil
+}
+
+func (v *ReplVisitor) VisitIdPattern(ctx *compiler.IdPatternContext) interface{} {
+	return ctx.GetText()
 }
 
 func (v *ReplVisitor) VisitIntLiteral(ctx *compiler.IntLiteralContext) interface{} {
 
 	intVal, _ := strconv.Atoi(ctx.GetText())
 
-	a := value.IntValue{
+	return value.IntValue{
 		InternalValue: intVal,
 	}
 
-	fmt.Println(a.Value())
-	fmt.Println(a.Type())
-
-	return a
 }
 
 func (v *ReplVisitor) VisitFloatLiteral(ctx *compiler.FloatLiteralContext) interface{} {
@@ -165,7 +190,9 @@ func (v *ReplVisitor) VisitFloatLiteral(ctx *compiler.FloatLiteralContext) inter
 
 func (v *ReplVisitor) VisitStringLiteral(ctx *compiler.StringLiteralContext) interface{} {
 
-	stringVal := ctx.GetText()
+	// remove quotes
+	// Todo: scape sequences
+	stringVal := ctx.GetText()[1 : len(ctx.GetText())-1]
 
 	return value.StringValue{
 		InternalValue: stringVal,

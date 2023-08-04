@@ -39,7 +39,15 @@ func (v *BaseTSwiftLanguageVisitor) VisitPrimitive_type(ctx *Primitive_typeConte
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseTSwiftLanguageVisitor) VisitAssign(ctx *AssignContext) interface{} {
+func (v *BaseTSwiftLanguageVisitor) VisitDirectAssign(ctx *DirectAssignContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitArithmeticAssign(ctx *ArithmeticAssignContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitIdPattern(ctx *IdPatternContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 

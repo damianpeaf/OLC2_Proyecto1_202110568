@@ -24,8 +24,12 @@ primitive_type:
 	| STRING_TYPE
 	| BOOL_TYPE;
 
-assign_stmt: ID EQUALS expr # Assign;
+assign_stmt:
+	id_pattern EQUALS expr								# DirectAssign
+	| id_pattern op = (PLUS_EQUALS | MINUS_EQUALS) expr	# ArithmeticAssign;
+
 // struct assign a.b.c = 1; +=, -=
+id_pattern: ID (DOT ID)* # IdPattern;
 
 literal:
 	INTEGER_LITERAL		# IntLiteral

@@ -46,6 +46,7 @@ func (s *BaseScope) AddVariable(name string, varType string, value value.IVOR, i
 
 func (s *BaseScope) GetVariable(name string) *Variable {
 	// todo: inspect parent scopes
+	// TOdo: suport for structs properties
 
 	variable, ok := s.variables[name]
 
