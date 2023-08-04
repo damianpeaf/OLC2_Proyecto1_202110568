@@ -205,7 +205,23 @@ func (v *ReplVisitor) VisitParenExp(ctx *compiler.ParenExpContext) interface{} {
 }
 
 func (v *ReplVisitor) VisitUnaryExp(ctx *compiler.UnaryExpContext) interface{} {
-	return v.VisitChildren(ctx)
+
+	exp := v.Visit(ctx.Expr()).(value.IVOR)
+
+	strat, ok := repl.UnaryStrats[ctx.GetOp().GetText()]
+
+	if !ok {
+		log.Fatal("Unary operator not found")
+	}
+
+	ok, msg, result := strat.Validate(exp)
+
+	if !ok {
+		log.Fatal(msg)
+	}
+
+	return result
+
 }
 
 func (v *ReplVisitor) VisitBinaryExp(ctx *compiler.BinaryExpContext) interface{} {
