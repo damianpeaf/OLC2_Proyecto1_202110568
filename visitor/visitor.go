@@ -53,7 +53,12 @@ func (v *ReplVisitor) VisitStmt(ctx *compiler.StmtContext) interface{} {
 		v.Visit(ctx.If_stmt())
 	} else if ctx.Switch_stmt() != nil {
 		v.Visit(ctx.Switch_stmt())
+	} else if ctx.While_stmt() != nil {
+		v.Visit(ctx.While_stmt())
+	} else if ctx.For_stmt() != nil {
+		v.Visit(ctx.For_stmt())
 	}
+
 	return nil
 }
 
@@ -401,4 +406,53 @@ func (v *ReplVisitor) VisitDefaultCase(ctx *compiler.DefaultCaseContext) interfa
 		v.Visit(stmt)
 	}
 	return nil
+}
+
+func (v *ReplVisitor) VisitWhileStmt(ctx *compiler.WhileStmtContext) interface{} {
+
+	condition := v.Visit(ctx.Expr()).(value.IVOR)
+
+	if condition.Type() != value.IVOR_BOOL {
+		log.Fatal("Condition must be a boolean")
+	}
+
+	// Push scope
+	whileScope := v.ScopeTrace.PushScope("while")
+
+	// TODO: handle break and continue statements from call stack
+
+	for condition.(value.BoolValue).InternalValue {
+
+		for _, stmt := range ctx.AllStmt() {
+			v.Visit(stmt)
+		}
+
+		condition = v.Visit(ctx.Expr()).(value.IVOR)
+
+		if condition.Type() != value.IVOR_BOOL {
+			log.Fatal("Condition must be a boolean")
+		}
+
+		// reset scope
+		whileScope.Reset()
+	}
+
+	// Pop scope
+	v.ScopeTrace.PopScope()
+
+	return nil
+}
+
+func (v *ReplVisitor) VisitForStmt(ctx *compiler.ForStmtContext) interface{} {
+
+	// Push scope
+	// mainForScope := v.ScopeTrace.PushScope("for")
+	// TODO: implement first 'iterable' values as: strings, vectors and ranges
+	// TODO: handle break and continue statements from call stack
+
+	return nil
+}
+
+func (v *ReplVisitor) VisitNumericRange(ctx *compiler.NumericRangeContext) interface{} {
+	return v.VisitChildren(ctx)
 }

@@ -57,6 +57,11 @@ func (s *BaseScope) GetVariable(name string) *Variable {
 	return nil
 }
 
+func (s *BaseScope) Reset() {
+	s.variables = make(map[string]*Variable)
+	s.children = make([]*BaseScope, 0)
+}
+
 func NewGlobalScope() *BaseScope {
 	return &BaseScope{
 		name:      "global",
@@ -80,12 +85,13 @@ type ScopeTrace struct {
 	CurrentScope *BaseScope
 }
 
-func (s *ScopeTrace) PushScope(name string) {
+func (s *ScopeTrace) PushScope(name string) *BaseScope {
 
 	newScope := NewLocalScope(name)
 	s.CurrentScope.AddChild(newScope)
 	s.CurrentScope = newScope
 
+	return s.CurrentScope
 }
 
 func (s *ScopeTrace) PopScope() {

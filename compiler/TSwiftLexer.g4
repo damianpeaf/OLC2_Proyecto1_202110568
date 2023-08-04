@@ -30,7 +30,10 @@ WHILE_KW: 'while';
 BREAK_KW: 'break';
 CONTINUE_KW: 'continue';
 RETURN_KW: 'return';
+GUARD_KW: 'guard';
+
 // ...
+IN_KW: 'in';
 
 // Types
 INTEGER_TYPE: 'Int';

@@ -87,4 +87,25 @@ type TSwiftLanguageVisitor interface {
 
 	// Visit a parse tree produced by TSwiftLanguage#DefaultCase.
 	VisitDefaultCase(ctx *DefaultCaseContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#WhileStmt.
+	VisitWhileStmt(ctx *WhileStmtContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#ForStmt.
+	VisitForStmt(ctx *ForStmtContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#NumericRange.
+	VisitNumericRange(ctx *NumericRangeContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#GuardStmt.
+	VisitGuardStmt(ctx *GuardStmtContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#ReturnStmt.
+	VisitReturnStmt(ctx *ReturnStmtContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#BreakStmt.
+	VisitBreakStmt(ctx *BreakStmtContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#ContinueStmt.
+	VisitContinueStmt(ctx *ContinueStmtContext) interface{}
 }

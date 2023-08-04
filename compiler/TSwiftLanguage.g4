@@ -13,7 +13,9 @@ stmt:
 	decl_stmt delimiter
 	| assign_stmt delimiter
 	| if_stmt
-	| switch_stmt;
+	| switch_stmt
+	| while_stmt
+	| for_stmt;
 
 decl_stmt:
 	var_type ID COLON primitive_type EQUALS expr		# TypeValueDecl
@@ -70,3 +72,18 @@ switch_stmt:
 switch_case: CASE_KW expr COLON stmt* # SwitchCase;
 
 default_case: DEFAULT_KW COLON stmt* # DefaultCase;
+
+while_stmt: WHILE_KW expr LBRACE stmt* RBRACE # WhileStmt;
+
+for_stmt:
+	FOR_KW ID IN_KW (expr | range) LBRACE stmt* RBRACE # ForStmt;
+
+range: expr DOT DOT DOT expr # NumericRange;
+
+guard_stmt:
+	GUARD_KW expr ELSE_KW LBRACE stmt* RBRACE # GuardStmt;
+
+transfer_stmt:
+	RETURN_KW expr?	# ReturnStmt
+	| BREAK_KW		# BreakStmt
+	| CONTINUE_KW	# ContinueStmt;

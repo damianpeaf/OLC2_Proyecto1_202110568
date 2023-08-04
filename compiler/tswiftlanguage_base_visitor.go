@@ -114,3 +114,31 @@ func (v *BaseTSwiftLanguageVisitor) VisitSwitchCase(ctx *SwitchCaseContext) inte
 func (v *BaseTSwiftLanguageVisitor) VisitDefaultCase(ctx *DefaultCaseContext) interface{} {
 	return v.VisitChildren(ctx)
 }
+
+func (v *BaseTSwiftLanguageVisitor) VisitWhileStmt(ctx *WhileStmtContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitForStmt(ctx *ForStmtContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitNumericRange(ctx *NumericRangeContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitGuardStmt(ctx *GuardStmtContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitReturnStmt(ctx *ReturnStmtContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitBreakStmt(ctx *BreakStmtContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitContinueStmt(ctx *ContinueStmtContext) interface{} {
+	return v.VisitChildren(ctx)
+}
