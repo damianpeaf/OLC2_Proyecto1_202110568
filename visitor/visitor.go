@@ -51,6 +51,8 @@ func (v *ReplVisitor) VisitStmt(ctx *compiler.StmtContext) interface{} {
 		v.Visit(ctx.Assign_stmt())
 	} else if ctx.If_stmt() != nil {
 		v.Visit(ctx.If_stmt())
+	} else if ctx.Switch_stmt() != nil {
+		v.Visit(ctx.Switch_stmt())
 	}
 	return nil
 }
@@ -226,6 +228,7 @@ func (v *ReplVisitor) VisitIdExp(ctx *compiler.IdExpContext) interface{} {
 	// TODO: check if variable exists
 	variable := v.ScopeTrace.GetVariable(varName)
 
+	// ? pointer
 	return variable.Value
 }
 
@@ -334,5 +337,68 @@ func (v *ReplVisitor) VisitElseStmt(ctx *compiler.ElseStmtContext) interface{} {
 	// Pop scope
 	v.ScopeTrace.PopScope()
 
+	return nil
+}
+
+func (v *ReplVisitor) VisitSwitchStmt(ctx *compiler.SwitchStmtContext) interface{} {
+
+	mainValue := v.Visit(ctx.Expr()).(value.IVOR)
+
+	v.ScopeTrace.PushScope("switch")
+
+	// TODO: handle break statement from call stack
+
+	// evaluate cases
+	for _, switchCase := range ctx.AllSwitch_case() {
+
+		caseValue := v.GetCaseValue(switchCase)
+
+		if caseValue.Type() != mainValue.Type() {
+			// warning
+			log.Fatal("Case value must be same type as switch value")
+		}
+
+		if caseValue.Value() == mainValue.Value() {
+			v.Visit(switchCase)
+		}
+
+	}
+
+	// evaluate default
+	if ctx.Default_case() != nil {
+		v.Visit(ctx.Default_case())
+	}
+
+	// Pop scope
+	v.ScopeTrace.PopScope()
+
+	return nil
+}
+
+func (v *ReplVisitor) GetCaseValue(tree antlr.ParseTree) value.IVOR {
+
+	switch val := tree.(type) {
+	case *compiler.SwitchCaseContext:
+		return v.Visit(val.Expr()).(value.IVOR)
+	default:
+		return nil
+	}
+
+}
+
+func (v *ReplVisitor) VisitSwitchCase(ctx *compiler.SwitchCaseContext) interface{} {
+
+	// * all cases inside switch case will share the same scope
+
+	for _, stmt := range ctx.AllStmt() {
+		v.Visit(stmt)
+	}
+	return nil
+}
+
+func (v *ReplVisitor) VisitDefaultCase(ctx *compiler.DefaultCaseContext) interface{} {
+	for _, stmt := range ctx.AllStmt() {
+		v.Visit(stmt)
+	}
 	return nil
 }

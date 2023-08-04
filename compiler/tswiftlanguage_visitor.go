@@ -78,4 +78,13 @@ type TSwiftLanguageVisitor interface {
 
 	// Visit a parse tree produced by TSwiftLanguage#ElseStmt.
 	VisitElseStmt(ctx *ElseStmtContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#SwitchStmt.
+	VisitSwitchStmt(ctx *SwitchStmtContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#SwitchCase.
+	VisitSwitchCase(ctx *SwitchCaseContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#DefaultCase.
+	VisitDefaultCase(ctx *DefaultCaseContext) interface{}
 }

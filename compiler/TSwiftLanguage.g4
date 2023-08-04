@@ -9,7 +9,11 @@ program: (stmt)* EOF?;
 
 delimiter: SEMICOLON | EOF;
 
-stmt: decl_stmt delimiter | assign_stmt delimiter | if_stmt;
+stmt:
+	decl_stmt delimiter
+	| assign_stmt delimiter
+	| if_stmt
+	| switch_stmt;
 
 decl_stmt:
 	var_type ID COLON primitive_type EQUALS expr		# TypeValueDecl
@@ -28,7 +32,6 @@ assign_stmt:
 	id_pattern EQUALS expr								# DirectAssign
 	| id_pattern op = (PLUS_EQUALS | MINUS_EQUALS) expr	# ArithmeticAssign;
 
-// struct assign a.b.c = 1; +=, -=
 id_pattern: ID (DOT ID)* # IdPattern;
 
 literal:
@@ -61,3 +64,9 @@ if_stmt: if_chain (ELSE_KW if_chain)* else_stmt? # IfStmt;
 if_chain: IF_KW expr LBRACE stmt* RBRACE # IfChain;
 else_stmt: ELSE_KW LBRACE stmt* RBRACE # ElseStmt;
 
+switch_stmt:
+	SWITCH_KW expr LBRACE switch_case* default_case? RBRACE # SwitchStmt;
+
+switch_case: CASE_KW expr COLON stmt* # SwitchCase;
+
+default_case: DEFAULT_KW COLON stmt* # DefaultCase;

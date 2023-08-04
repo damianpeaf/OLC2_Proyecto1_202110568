@@ -102,3 +102,15 @@ func (v *BaseTSwiftLanguageVisitor) VisitIfChain(ctx *IfChainContext) interface{
 func (v *BaseTSwiftLanguageVisitor) VisitElseStmt(ctx *ElseStmtContext) interface{} {
 	return v.VisitChildren(ctx)
 }
+
+func (v *BaseTSwiftLanguageVisitor) VisitSwitchStmt(ctx *SwitchStmtContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitSwitchCase(ctx *SwitchCaseContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitDefaultCase(ctx *DefaultCaseContext) interface{} {
+	return v.VisitChildren(ctx)
+}
