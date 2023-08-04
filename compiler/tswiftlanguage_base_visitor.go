@@ -91,6 +91,14 @@ func (v *BaseTSwiftLanguageVisitor) VisitBinaryExp(ctx *BinaryExpContext) interf
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseTSwiftLanguageVisitor) VisitIf_stmt(ctx *If_stmtContext) interface{} {
+func (v *BaseTSwiftLanguageVisitor) VisitIfStmt(ctx *IfStmtContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitIfChain(ctx *IfChainContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitElseStmt(ctx *ElseStmtContext) interface{} {
 	return v.VisitChildren(ctx)
 }

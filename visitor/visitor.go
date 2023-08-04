@@ -1,6 +1,7 @@
 package visitor
 
 import (
+	"fmt"
 	"log"
 	"main/compiler"
 	"main/repl"
@@ -48,8 +49,9 @@ func (v *ReplVisitor) VisitStmt(ctx *compiler.StmtContext) interface{} {
 		v.Visit(ctx.Decl_stmt())
 	} else if ctx.Assign_stmt() != nil {
 		v.Visit(ctx.Assign_stmt())
+	} else if ctx.If_stmt() != nil {
+		v.Visit(ctx.If_stmt())
 	}
-
 	return nil
 }
 
@@ -271,6 +273,66 @@ func (v *ReplVisitor) VisitBinaryExp(ctx *compiler.BinaryExpContext) interface{}
 	return result
 }
 
-func (v *ReplVisitor) VisitIf_stmt(ctx *compiler.If_stmtContext) interface{} {
+func (v *ReplVisitor) VisitIfStmt(ctx *compiler.IfStmtContext) interface{} {
+
+	fmt.Println("if stmt")
+	fmt.Println(ctx.GetText())
+
+	runChain := true
+
+	for _, ifStmt := range ctx.AllIf_chain() {
+
+		runChain = !v.Visit(ifStmt).(bool)
+
+		if !runChain {
+			break
+		}
+	}
+
+	if runChain && ctx.Else_stmt() != nil {
+		v.Visit(ctx.Else_stmt())
+	}
+
+	return nil
+}
+
+func (v *ReplVisitor) VisitIfChain(ctx *compiler.IfChainContext) interface{} {
+
+	condition := v.Visit(ctx.Expr()).(value.IVOR)
+
+	if condition.Type() != value.IVOR_BOOL {
+		log.Fatal("Condition must be a boolean")
+	}
+
+	if condition.(value.BoolValue).InternalValue {
+
+		// Push scope
+		v.ScopeTrace.PushScope("if")
+
+		for _, stmt := range ctx.AllStmt() {
+			v.Visit(stmt)
+		}
+
+		// Pop scope
+		v.ScopeTrace.PopScope()
+
+		return true
+	}
+
+	return false
+}
+
+func (v *ReplVisitor) VisitElseStmt(ctx *compiler.ElseStmtContext) interface{} {
+
+	// Push scope
+	v.ScopeTrace.PushScope("else")
+
+	for _, stmt := range ctx.AllStmt() {
+		v.Visit(stmt)
+	}
+
+	// Pop scope
+	v.ScopeTrace.PopScope()
+
 	return nil
 }

@@ -70,6 +70,12 @@ type TSwiftLanguageVisitor interface {
 	// Visit a parse tree produced by TSwiftLanguage#BinaryExp.
 	VisitBinaryExp(ctx *BinaryExpContext) interface{}
 
-	// Visit a parse tree produced by TSwiftLanguage#if_stmt.
-	VisitIf_stmt(ctx *If_stmtContext) interface{}
+	// Visit a parse tree produced by TSwiftLanguage#IfStmt.
+	VisitIfStmt(ctx *IfStmtContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#IfChain.
+	VisitIfChain(ctx *IfChainContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#ElseStmt.
+	VisitElseStmt(ctx *ElseStmtContext) interface{}
 }

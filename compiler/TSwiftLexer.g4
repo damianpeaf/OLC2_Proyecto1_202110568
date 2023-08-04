@@ -2,14 +2,12 @@ lexer grammar TSwiftLexer;
 
 // Skip tokens
 
-WS: [ \t]+ -> skip;
+WS: [ \t\r\n]+ -> skip;
 COMMENT: '//' .*? '\n' -> skip;
 MULTILINE_COMMENT: '/*' .*? '*/' -> skip;
 
 // Stmts delimiter
-
 SEMICOLON: ';';
-NEWLINE: '\r'? '\n';
 
 // Keywords
 

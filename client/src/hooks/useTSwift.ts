@@ -55,7 +55,7 @@ export const useTSwift = () => {
         dispatch({ type: 'set-symbol-table', payload: { content } })
     }
 
-    const runProgram = () => {
+    const runProgram = async () => {
         dispatch({ type: 'set-terminal-content', payload: { content: '' } })
         dispatch({ type: 'reset-graphviz-content' })
         dispatch({ type: 'set-errors', payload: { errors: [] } })
@@ -66,6 +66,16 @@ export const useTSwift = () => {
         setTerminalContent('Ejecutando programa...')
 
         // Todo: fetch TSwift runtime
+
+        // form-data
+        const formData = new FormData()
+        formData.append('code', programInput)
+
+        const res = await fetch(import.meta.env.VITE_API_URL + '/compile', {
+            method: 'POST',
+            body: formData
+        })
+
 
 
         // * Set terminal content

@@ -109,6 +109,22 @@ func (s *ScopeTrace) Print() {
 		fmt.Println(k, v)
 	}
 
+	fmt.Println("Child Scopes")
+	fmt.Println("============")
+	fmt.Println("")
+
+	for _, child := range s.GlobalScope.children {
+
+		fmt.Println(child.name)
+		fmt.Println("============")
+
+		for k, v := range child.variables {
+			fmt.Println(k, v)
+		}
+
+		fmt.Println("")
+	}
+
 }
 
 func NewScopeTrace() *ScopeTrace {

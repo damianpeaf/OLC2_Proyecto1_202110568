@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"main/compiler"
 	"main/visitor"
 
@@ -15,6 +16,8 @@ func main() {
 	app.Post("/compile", func(c *fiber.Ctx) error {
 
 		code := c.FormValue("code")
+
+		fmt.Println(code)
 
 		lexer := compiler.NewTSwiftLexer(antlr.NewInputStream(code))
 

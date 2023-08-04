@@ -5,11 +5,11 @@ options {
 	// language = Swift; superClass = SwiftParserBaseListener;
 }
 
-program: (stmt delimiter)*;
+program: (stmt)* EOF?;
 
-delimiter: SEMICOLON | NEWLINE+ | EOF;
+delimiter: SEMICOLON | EOF;
 
-stmt: decl_stmt | assign_stmt;
+stmt: decl_stmt delimiter | assign_stmt delimiter | if_stmt;
 
 decl_stmt:
 	var_type ID COLON primitive_type EQUALS expr		# TypeValueDecl
@@ -56,5 +56,8 @@ expr:
 	| literal							# LiteralExp;
 // StructMethodCallExp, StructPropertyCallExp, FunctionCallExp, vector, matrix;  (++, --)?
 
-if_stmt: IF_KW expr LBRACE stmt* RBRACE;
+if_stmt: if_chain (ELSE_KW if_chain)* else_stmt? # IfStmt;
+
+if_chain: IF_KW expr LBRACE stmt* RBRACE # IfChain;
+else_stmt: ELSE_KW LBRACE stmt* RBRACE # ElseStmt;
 
