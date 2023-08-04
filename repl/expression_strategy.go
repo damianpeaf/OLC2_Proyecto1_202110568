@@ -81,8 +81,8 @@ var addStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.IntValue{
-					InternalValue: left.(value.IntValue).InternalValue + right.(value.IntValue).InternalValue,
+				return true, "", &value.IntValue{
+					InternalValue: left.(*value.IntValue).InternalValue + right.(*value.IntValue).InternalValue,
 				}
 			},
 		},
@@ -92,8 +92,8 @@ var addStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.FloatValue{
-					InternalValue: left.(value.FloatValue).InternalValue + right.(value.FloatValue).InternalValue,
+				return true, "", &value.FloatValue{
+					InternalValue: left.(*value.FloatValue).InternalValue + right.(*value.FloatValue).InternalValue,
 				}
 			},
 		},
@@ -102,13 +102,13 @@ var addStrategy = BinaryStrategy{
 			RightType:      value.IVOR_INT,
 			LeftConversion: nil,
 			RightConversion: func(v value.IVOR) value.IVOR {
-				return value.FloatValue{
-					InternalValue: float64(v.(value.IntValue).InternalValue),
+				return &value.FloatValue{
+					InternalValue: float64(v.(*value.IntValue).InternalValue),
 				}
 			},
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.FloatValue{
-					InternalValue: left.(value.FloatValue).InternalValue + right.(value.FloatValue).InternalValue,
+				return true, "", &value.FloatValue{
+					InternalValue: left.(*value.FloatValue).InternalValue + right.(*value.FloatValue).InternalValue,
 				}
 			},
 		},
@@ -118,8 +118,8 @@ var addStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.StringValue{
-					InternalValue: left.(value.StringValue).InternalValue + right.(value.StringValue).InternalValue,
+				return true, "", &value.StringValue{
+					InternalValue: left.(*value.StringValue).InternalValue + right.(*value.StringValue).InternalValue,
 				}
 			},
 		},
@@ -138,8 +138,8 @@ var subStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.IntValue{
-					InternalValue: left.(value.IntValue).InternalValue - right.(value.IntValue).InternalValue,
+				return true, "", &value.IntValue{
+					InternalValue: left.(*value.IntValue).InternalValue - right.(*value.IntValue).InternalValue,
 				}
 			},
 		},
@@ -149,8 +149,8 @@ var subStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.FloatValue{
-					InternalValue: left.(value.FloatValue).InternalValue - right.(value.FloatValue).InternalValue,
+				return true, "", &value.FloatValue{
+					InternalValue: left.(*value.FloatValue).InternalValue - right.(*value.FloatValue).InternalValue,
 				}
 			},
 		},
@@ -159,13 +159,13 @@ var subStrategy = BinaryStrategy{
 			RightType:      value.IVOR_INT,
 			LeftConversion: nil,
 			RightConversion: func(v value.IVOR) value.IVOR {
-				return value.FloatValue{
-					InternalValue: float64(v.(value.IntValue).InternalValue),
+				return &value.FloatValue{
+					InternalValue: float64(v.(*value.IntValue).InternalValue),
 				}
 			},
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.FloatValue{
-					InternalValue: left.(value.FloatValue).InternalValue - right.(value.FloatValue).InternalValue,
+				return true, "", &value.FloatValue{
+					InternalValue: left.(*value.FloatValue).InternalValue - right.(*value.FloatValue).InternalValue,
 				}
 			},
 		},
@@ -184,8 +184,8 @@ var mulStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.IntValue{
-					InternalValue: left.(value.IntValue).InternalValue * right.(value.IntValue).InternalValue,
+				return true, "", &value.IntValue{
+					InternalValue: left.(*value.IntValue).InternalValue * right.(*value.IntValue).InternalValue,
 				}
 			},
 		},
@@ -195,8 +195,8 @@ var mulStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.FloatValue{
-					InternalValue: left.(value.FloatValue).InternalValue * right.(value.FloatValue).InternalValue,
+				return true, "", &value.FloatValue{
+					InternalValue: left.(*value.FloatValue).InternalValue * right.(*value.FloatValue).InternalValue,
 				}
 			},
 		},
@@ -205,13 +205,13 @@ var mulStrategy = BinaryStrategy{
 			RightType:      value.IVOR_INT,
 			LeftConversion: nil,
 			RightConversion: func(v value.IVOR) value.IVOR {
-				return value.FloatValue{
-					InternalValue: float64(v.(value.IntValue).InternalValue),
+				return &value.FloatValue{
+					InternalValue: float64(v.(*value.IntValue).InternalValue),
 				}
 			},
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.FloatValue{
-					InternalValue: left.(value.FloatValue).InternalValue * right.(value.FloatValue).InternalValue,
+				return true, "", &value.FloatValue{
+					InternalValue: left.(*value.FloatValue).InternalValue * right.(*value.FloatValue).InternalValue,
 				}
 			},
 		},
@@ -231,12 +231,12 @@ var divStrategy = BinaryStrategy{
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
 
-				if right.(value.IntValue).InternalValue == 0 {
+				if right.(*value.IntValue).InternalValue == 0 {
 					return false, "No se puede dividir entre cero", value.DefaultNilValue
 				}
 
-				return true, "", value.IntValue{
-					InternalValue: left.(value.IntValue).InternalValue / right.(value.IntValue).InternalValue,
+				return true, "", &value.IntValue{
+					InternalValue: left.(*value.IntValue).InternalValue / right.(*value.IntValue).InternalValue,
 				}
 			},
 		},
@@ -247,12 +247,12 @@ var divStrategy = BinaryStrategy{
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
 
-				if right.(value.FloatValue).InternalValue == 0 {
+				if right.(*value.FloatValue).InternalValue == 0 {
 					return false, "No se puede dividir entre cero", value.DefaultNilValue
 				}
 
-				return true, "", value.FloatValue{
-					InternalValue: left.(value.FloatValue).InternalValue / right.(value.FloatValue).InternalValue,
+				return true, "", &value.FloatValue{
+					InternalValue: left.(*value.FloatValue).InternalValue / right.(*value.FloatValue).InternalValue,
 				}
 			},
 		},
@@ -261,18 +261,18 @@ var divStrategy = BinaryStrategy{
 			RightType:      value.IVOR_INT,
 			LeftConversion: nil,
 			RightConversion: func(v value.IVOR) value.IVOR {
-				return value.FloatValue{
-					InternalValue: float64(v.(value.IntValue).InternalValue),
+				return &value.FloatValue{
+					InternalValue: float64(v.(*value.IntValue).InternalValue),
 				}
 			},
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
 
-				if right.(value.FloatValue).InternalValue == 0 {
+				if right.(*value.FloatValue).InternalValue == 0 {
 					return false, "No se puede dividir entre cero", value.DefaultNilValue
 				}
 
-				return true, "", value.FloatValue{
-					InternalValue: left.(value.FloatValue).InternalValue / right.(value.FloatValue).InternalValue,
+				return true, "", &value.FloatValue{
+					InternalValue: left.(*value.FloatValue).InternalValue / right.(*value.FloatValue).InternalValue,
 				}
 			},
 		},
@@ -292,12 +292,12 @@ var modStrategy = BinaryStrategy{
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
 
-				if right.(value.IntValue).InternalValue == 0 {
+				if right.(*value.IntValue).InternalValue == 0 {
 					return false, "No se puede dividir entre cero", value.DefaultNilValue
 				}
 
-				return true, "", value.IntValue{
-					InternalValue: left.(value.IntValue).InternalValue % right.(value.IntValue).InternalValue,
+				return true, "", &value.IntValue{
+					InternalValue: left.(*value.IntValue).InternalValue % right.(*value.IntValue).InternalValue,
 				}
 			},
 		},
@@ -353,13 +353,13 @@ func sameTypeStrat(name string, eval evalFunc) BinaryStrategy {
 }
 
 var eqStrategy = sameTypeStrat("==", func(left, right value.IVOR) (bool, string, value.IVOR) {
-	return true, "", value.BoolValue{
+	return true, "", &value.BoolValue{
 		InternalValue: left.Value() == right.Value(),
 	}
 })
 
 var notEqStrategy = sameTypeStrat("!=", func(left, right value.IVOR) (bool, string, value.IVOR) {
-	return true, "", value.BoolValue{
+	return true, "", &value.BoolValue{
 		InternalValue: left.Value() != right.Value(),
 	}
 })
@@ -375,8 +375,8 @@ var lessThanStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.BoolValue{
-					InternalValue: left.(value.IntValue).InternalValue < right.(value.IntValue).InternalValue,
+				return true, "", &value.BoolValue{
+					InternalValue: left.(*value.IntValue).InternalValue < right.(*value.IntValue).InternalValue,
 				}
 			},
 		},
@@ -386,8 +386,8 @@ var lessThanStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.BoolValue{
-					InternalValue: left.(value.FloatValue).InternalValue < right.(value.FloatValue).InternalValue,
+				return true, "", &value.BoolValue{
+					InternalValue: left.(*value.FloatValue).InternalValue < right.(*value.FloatValue).InternalValue,
 				}
 			},
 		},
@@ -397,8 +397,8 @@ var lessThanStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.BoolValue{
-					InternalValue: left.(value.StringValue).InternalValue < right.(value.StringValue).InternalValue,
+				return true, "", &value.BoolValue{
+					InternalValue: left.(*value.StringValue).InternalValue < right.(*value.StringValue).InternalValue,
 				}
 			},
 		},
@@ -408,8 +408,8 @@ var lessThanStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.BoolValue{
-					InternalValue: left.(value.CharacterValue).InternalValue < right.(value.CharacterValue).InternalValue,
+				return true, "", &value.BoolValue{
+					InternalValue: left.(*value.CharacterValue).InternalValue < right.(*value.CharacterValue).InternalValue,
 				}
 			},
 		},
@@ -427,8 +427,8 @@ var lessOrEqStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.BoolValue{
-					InternalValue: left.(value.IntValue).InternalValue <= right.(value.IntValue).InternalValue,
+				return true, "", &value.BoolValue{
+					InternalValue: left.(*value.IntValue).InternalValue <= right.(*value.IntValue).InternalValue,
 				}
 			},
 		},
@@ -438,8 +438,8 @@ var lessOrEqStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.BoolValue{
-					InternalValue: left.(value.FloatValue).InternalValue <= right.(value.FloatValue).InternalValue,
+				return true, "", &value.BoolValue{
+					InternalValue: left.(*value.FloatValue).InternalValue <= right.(*value.FloatValue).InternalValue,
 				}
 			},
 		},
@@ -449,8 +449,8 @@ var lessOrEqStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.BoolValue{
-					InternalValue: left.(value.StringValue).InternalValue <= right.(value.StringValue).InternalValue,
+				return true, "", &value.BoolValue{
+					InternalValue: left.(*value.StringValue).InternalValue <= right.(*value.StringValue).InternalValue,
 				}
 			},
 		},
@@ -460,8 +460,8 @@ var lessOrEqStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.BoolValue{
-					InternalValue: left.(value.CharacterValue).InternalValue <= right.(value.CharacterValue).InternalValue,
+				return true, "", &value.BoolValue{
+					InternalValue: left.(*value.CharacterValue).InternalValue <= right.(*value.CharacterValue).InternalValue,
 				}
 			},
 		},
@@ -479,8 +479,8 @@ var greaterThanStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.BoolValue{
-					InternalValue: left.(value.IntValue).InternalValue > right.(value.IntValue).InternalValue,
+				return true, "", &value.BoolValue{
+					InternalValue: left.(*value.IntValue).InternalValue > right.(*value.IntValue).InternalValue,
 				}
 			},
 		},
@@ -490,8 +490,8 @@ var greaterThanStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.BoolValue{
-					InternalValue: left.(value.FloatValue).InternalValue > right.(value.FloatValue).InternalValue,
+				return true, "", &value.BoolValue{
+					InternalValue: left.(*value.FloatValue).InternalValue > right.(*value.FloatValue).InternalValue,
 				}
 			},
 		},
@@ -501,8 +501,8 @@ var greaterThanStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.BoolValue{
-					InternalValue: left.(value.StringValue).InternalValue > right.(value.StringValue).InternalValue,
+				return true, "", &value.BoolValue{
+					InternalValue: left.(*value.StringValue).InternalValue > right.(*value.StringValue).InternalValue,
 				}
 			},
 		},
@@ -512,8 +512,8 @@ var greaterThanStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.BoolValue{
-					InternalValue: left.(value.CharacterValue).InternalValue > right.(value.CharacterValue).InternalValue,
+				return true, "", &value.BoolValue{
+					InternalValue: left.(*value.CharacterValue).InternalValue > right.(*value.CharacterValue).InternalValue,
 				}
 			},
 		},
@@ -531,8 +531,8 @@ var greaterOrEqStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.BoolValue{
-					InternalValue: left.(value.IntValue).InternalValue >= right.(value.IntValue).InternalValue,
+				return true, "", &value.BoolValue{
+					InternalValue: left.(*value.IntValue).InternalValue >= right.(*value.IntValue).InternalValue,
 				}
 			},
 		},
@@ -542,8 +542,8 @@ var greaterOrEqStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.BoolValue{
-					InternalValue: left.(value.FloatValue).InternalValue >= right.(value.FloatValue).InternalValue,
+				return true, "", &value.BoolValue{
+					InternalValue: left.(*value.FloatValue).InternalValue >= right.(*value.FloatValue).InternalValue,
 				}
 			},
 		},
@@ -553,8 +553,8 @@ var greaterOrEqStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.BoolValue{
-					InternalValue: left.(value.StringValue).InternalValue >= right.(value.StringValue).InternalValue,
+				return true, "", &value.BoolValue{
+					InternalValue: left.(*value.StringValue).InternalValue >= right.(*value.StringValue).InternalValue,
 				}
 			},
 		},
@@ -564,8 +564,8 @@ var greaterOrEqStrategy = BinaryStrategy{
 			LeftConversion:  nil,
 			RightConversion: nil,
 			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.BoolValue{
-					InternalValue: left.(value.CharacterValue).InternalValue >= right.(value.CharacterValue).InternalValue,
+				return true, "", &value.BoolValue{
+					InternalValue: left.(*value.CharacterValue).InternalValue >= right.(*value.CharacterValue).InternalValue,
 				}
 			},
 		},
@@ -593,14 +593,14 @@ func genericBinaryLogicalStrat(name string, eval evalFunc) BinaryStrategy {
 }
 
 var andStrategy = genericBinaryLogicalStrat("&&", func(left, right value.IVOR) (bool, string, value.IVOR) {
-	return true, "", value.BoolValue{
-		InternalValue: left.(value.BoolValue).InternalValue && right.(value.BoolValue).InternalValue,
+	return true, "", &value.BoolValue{
+		InternalValue: left.(*value.BoolValue).InternalValue && right.(*value.BoolValue).InternalValue,
 	}
 })
 
 var orStrategy = genericBinaryLogicalStrat("||", func(left, right value.IVOR) (bool, string, value.IVOR) {
-	return true, "", value.BoolValue{
-		InternalValue: left.(value.BoolValue).InternalValue || right.(value.BoolValue).InternalValue,
+	return true, "", &value.BoolValue{
+		InternalValue: left.(*value.BoolValue).InternalValue || right.(*value.BoolValue).InternalValue,
 	}
 })
 
@@ -668,8 +668,8 @@ var notStrategy = UnaryStrategy{
 			Type:       value.IVOR_BOOL,
 			Conversion: nil,
 			Eval: func(i1, i2 value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.BoolValue{
-					InternalValue: !i1.(value.BoolValue).InternalValue,
+				return true, "", &value.BoolValue{
+					InternalValue: !i1.(*value.BoolValue).InternalValue,
 				}
 			},
 		},
@@ -686,8 +686,8 @@ var minusStrategy = UnaryStrategy{
 			Type:       value.IVOR_INT,
 			Conversion: nil,
 			Eval: func(i1, i2 value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.IntValue{
-					InternalValue: -i1.(value.IntValue).InternalValue,
+				return true, "", &value.IntValue{
+					InternalValue: -i1.(*value.IntValue).InternalValue,
 				}
 			},
 		},
@@ -695,8 +695,8 @@ var minusStrategy = UnaryStrategy{
 			Type:       value.IVOR_FLOAT,
 			Conversion: nil,
 			Eval: func(i1, i2 value.IVOR) (bool, string, value.IVOR) {
-				return true, "", value.FloatValue{
-					InternalValue: -i1.(value.FloatValue).InternalValue,
+				return true, "", &value.FloatValue{
+					InternalValue: -i1.(*value.FloatValue).InternalValue,
 				}
 			},
 		},

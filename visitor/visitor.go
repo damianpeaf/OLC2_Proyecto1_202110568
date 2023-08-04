@@ -176,7 +176,7 @@ func (v *ReplVisitor) VisitIntLiteral(ctx *compiler.IntLiteralContext) interface
 
 	intVal, _ := strconv.Atoi(ctx.GetText())
 
-	return value.IntValue{
+	return &value.IntValue{
 		InternalValue: intVal,
 	}
 
@@ -186,7 +186,7 @@ func (v *ReplVisitor) VisitFloatLiteral(ctx *compiler.FloatLiteralContext) inter
 
 	floatVal, _ := strconv.ParseFloat(ctx.GetText(), 64)
 
-	return value.FloatValue{
+	return &value.FloatValue{
 		InternalValue: floatVal,
 	}
 
@@ -198,7 +198,7 @@ func (v *ReplVisitor) VisitStringLiteral(ctx *compiler.StringLiteralContext) int
 	// Todo: scape sequences
 	stringVal := ctx.GetText()[1 : len(ctx.GetText())-1]
 
-	return value.StringValue{
+	return &value.StringValue{
 		InternalValue: stringVal,
 	}
 
@@ -208,7 +208,7 @@ func (v *ReplVisitor) VisitBoolLiteral(ctx *compiler.BoolLiteralContext) interfa
 
 	boolVal, _ := strconv.ParseBool(ctx.GetText())
 
-	return value.BoolValue{
+	return &value.BoolValue{
 		InternalValue: boolVal,
 	}
 
