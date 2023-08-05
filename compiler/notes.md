@@ -3,6 +3,7 @@
     1.1. Type checking
         1.1.1. Int literal can be assigned to a float variable, but not vice versa.
         1.1.2. String literal of length 1 can be assigned to a char variable.
+        1.1.3. Simple types are assign by value. Complex types are assign by reference.
     1.2 Constant can't be reassigned.
 2. Scope related
     2.1 Variable can't be declared twice in the same scope.

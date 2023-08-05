@@ -12,10 +12,12 @@ delimiter: SEMICOLON | EOF;
 stmt:
 	decl_stmt delimiter
 	| assign_stmt delimiter
+	| transfer_stmt delimiter
 	| if_stmt
 	| switch_stmt
 	| while_stmt
-	| for_stmt;
+	| for_stmt
+	| guard_stmt;
 
 decl_stmt:
 	var_type ID COLON primitive_type EQUALS expr		# TypeValueDecl

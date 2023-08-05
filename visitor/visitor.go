@@ -14,11 +14,13 @@ import (
 type ReplVisitor struct {
 	compiler.BaseTSwiftLanguageVisitor
 	ScopeTrace *repl.ScopeTrace
+	CallStack  *repl.CallStack
 }
 
 func NewVisitor() *ReplVisitor {
 	return &ReplVisitor{
 		ScopeTrace: repl.NewScopeTrace(),
+		CallStack:  repl.NewCallStack(),
 	}
 }
 
@@ -57,6 +59,10 @@ func (v *ReplVisitor) VisitStmt(ctx *compiler.StmtContext) interface{} {
 		v.Visit(ctx.While_stmt())
 	} else if ctx.For_stmt() != nil {
 		v.Visit(ctx.For_stmt())
+	} else if ctx.Guard_stmt() != nil {
+		v.Visit(ctx.Guard_stmt())
+	} else if ctx.Transfer_stmt() != nil {
+		v.Visit(ctx.Transfer_stmt())
 	}
 
 	return nil
@@ -352,6 +358,28 @@ func (v *ReplVisitor) VisitSwitchStmt(ctx *compiler.SwitchStmtContext) interface
 	v.ScopeTrace.PushScope("switch")
 
 	// TODO: handle break statement from call stack
+	item := &repl.CallStackItem{
+		ReturnValue: value.DefaultNilValue,
+		Type: []string{
+			repl.BreakItem,
+		},
+	}
+
+	v.CallStack.Push(item)
+
+	defer func() {
+
+		if i, ok := recover().(*repl.CallStackItem); i != nil && ok {
+
+			// Properly end switch scope
+			v.ScopeTrace.PopScope()
+
+			if i != item {
+				// propagate item
+				panic(i)
+			}
+		}
+	}()
 
 	// evaluate cases
 	for _, switchCase := range ctx.AllSwitch_case() {
@@ -454,5 +482,49 @@ func (v *ReplVisitor) VisitForStmt(ctx *compiler.ForStmtContext) interface{} {
 }
 
 func (v *ReplVisitor) VisitNumericRange(ctx *compiler.NumericRangeContext) interface{} {
+	// TODO: implement range
 	return v.VisitChildren(ctx)
+}
+
+func (v *ReplVisitor) VisitGuardStmt(ctx *compiler.GuardStmtContext) interface{} {
+
+	condition := v.Visit(ctx.Expr()).(value.IVOR)
+
+	if condition.Type() != value.IVOR_BOOL {
+		log.Fatal("Condition must be a boolean")
+	}
+
+	if !condition.(value.BoolValue).InternalValue {
+
+		// Push scope
+		v.ScopeTrace.PushScope("guard")
+
+		for _, stmt := range ctx.AllStmt() {
+			v.Visit(stmt)
+		}
+
+		// Pop scope
+		v.ScopeTrace.PopScope()
+	}
+
+	return nil
+}
+
+func (v *ReplVisitor) VisitReturnStmt(ctx *compiler.ReturnStmtContext) interface{} {
+	return nil
+}
+
+func (v *ReplVisitor) VisitBreakStmt(ctx *compiler.BreakStmtContext) interface{} {
+
+	peek := v.CallStack.Pop()
+
+	if !peek.IsType(repl.BreakItem) {
+		log.Fatal("Break statement must be inside a loop or switch")
+	}
+
+	panic(peek)
+}
+
+func (v *ReplVisitor) VisitContinueStmt(ctx *compiler.ContinueStmtContext) interface{} {
+	return nil
 }

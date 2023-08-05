@@ -4,7 +4,7 @@ import "main/value"
 
 type Variable struct {
 	Name    string
-	Value   value.IVOR // TODO: change to a pointer
+	Value   value.IVOR
 	Type    string
 	IsConst bool
 }
