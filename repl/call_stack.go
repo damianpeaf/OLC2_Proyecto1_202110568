@@ -11,6 +11,7 @@ const (
 type CallStackItem struct {
 	ReturnValue value.IVOR
 	Type        []string
+	Action      string
 }
 
 func (csi *CallStackItem) IsType(t string) bool {
@@ -22,6 +23,10 @@ func (csi *CallStackItem) IsType(t string) bool {
 	}
 
 	return false
+}
+
+func (csi *CallStackItem) IsAction(a string) bool {
+	return csi.Action == a
 }
 
 type CallStack struct {
@@ -49,6 +54,22 @@ func (cs *CallStack) In(item *CallStackItem) bool {
 		}
 	}
 	return false
+}
+
+func (cs *CallStack) Clean(item *CallStackItem) {
+
+	if !cs.In(item) {
+		return
+	}
+
+	for {
+		peek := cs.Pop()
+
+		if peek == item {
+			break
+		}
+	}
+
 }
 
 func (cs *CallStack) Len() int {

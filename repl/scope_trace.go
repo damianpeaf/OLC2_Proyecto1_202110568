@@ -102,6 +102,7 @@ func (s *ScopeTrace) PushScope(name string) *BaseScope {
 }
 
 func (s *ScopeTrace) PopScope() {
+	// ? implement new method, sending scope as pointer, and make CurrentScope equals the parent
 	s.CurrentScope = s.CurrentScope.Parent()
 }
 
