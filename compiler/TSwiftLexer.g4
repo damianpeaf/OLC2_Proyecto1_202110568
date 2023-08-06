@@ -100,6 +100,7 @@ DOT: '.';
 COLON: ':';
 ARROW: '->';
 INTERROGATION: '?';
+ANPERSAND: '&';
 
 // Error?
 

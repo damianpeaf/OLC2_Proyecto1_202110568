@@ -64,6 +64,9 @@ type TSwiftLanguageVisitor interface {
 	// Visit a parse tree produced by TSwiftLanguage#ParenExp.
 	VisitParenExp(ctx *ParenExpContext) interface{}
 
+	// Visit a parse tree produced by TSwiftLanguage#FuncCallExp.
+	VisitFuncCallExp(ctx *FuncCallExpContext) interface{}
+
 	// Visit a parse tree produced by TSwiftLanguage#UnaryExp.
 	VisitUnaryExp(ctx *UnaryExpContext) interface{}
 
@@ -108,4 +111,13 @@ type TSwiftLanguageVisitor interface {
 
 	// Visit a parse tree produced by TSwiftLanguage#ContinueStmt.
 	VisitContinueStmt(ctx *ContinueStmtContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#FuncCall.
+	VisitFuncCall(ctx *FuncCallContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#ArgList.
+	VisitArgList(ctx *ArgListContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#FuncArg.
+	VisitFuncArg(ctx *FuncArgContext) interface{}
 }

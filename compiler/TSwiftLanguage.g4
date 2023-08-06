@@ -17,7 +17,8 @@ stmt:
 	| switch_stmt
 	| while_stmt
 	| for_stmt
-	| guard_stmt;
+	| guard_stmt
+	| func_call delimiter;
 
 decl_stmt:
 	var_type ID COLON primitive_type EQUALS expr		# TypeValueDecl
@@ -60,7 +61,8 @@ expr:
 	| op = (NOT | MINUS) expr			# UnaryExp // !a | -a
 	| LPAREN expr RPAREN				# ParenExp // (a)
 	| ID								# IdExp // a
-	| literal							# LiteralExp;
+	| literal							# LiteralExp
+	| func_call							# FuncCallExp;
 // StructMethodCallExp, StructPropertyCallExp, FunctionCallExp, vector, matrix;  (++, --)?
 
 if_stmt: if_chain (ELSE_KW if_chain)* else_stmt? # IfStmt;
@@ -89,3 +91,9 @@ transfer_stmt:
 	RETURN_KW expr?	# ReturnStmt
 	| BREAK_KW		# BreakStmt
 	| CONTINUE_KW	# ContinueStmt;
+
+func_call: id_pattern LPAREN arg_list? RPAREN # FuncCall;
+
+// external names -> num: value, num2: value2
+arg_list: func_arg (COMMA func_arg)* # ArgList;
+func_arg: (ID COLON)? (ANPERSAND)? expr # FuncArg;

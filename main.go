@@ -32,6 +32,7 @@ func main() {
 		replVisitor.Visit(tree)
 
 		replVisitor.ScopeTrace.Print()
+		replVisitor.Console.Show()
 
 		return c.SendString("compiled")
 

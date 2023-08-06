@@ -83,6 +83,10 @@ func (v *BaseTSwiftLanguageVisitor) VisitParenExp(ctx *ParenExpContext) interfac
 	return v.VisitChildren(ctx)
 }
 
+func (v *BaseTSwiftLanguageVisitor) VisitFuncCallExp(ctx *FuncCallExpContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
 func (v *BaseTSwiftLanguageVisitor) VisitUnaryExp(ctx *UnaryExpContext) interface{} {
 	return v.VisitChildren(ctx)
 }
@@ -140,5 +144,17 @@ func (v *BaseTSwiftLanguageVisitor) VisitBreakStmt(ctx *BreakStmtContext) interf
 }
 
 func (v *BaseTSwiftLanguageVisitor) VisitContinueStmt(ctx *ContinueStmtContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitFuncCall(ctx *FuncCallContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitArgList(ctx *ArgListContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitFuncArg(ctx *FuncArgContext) interface{} {
 	return v.VisitChildren(ctx)
 }

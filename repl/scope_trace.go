@@ -10,6 +10,7 @@ type BaseScope struct {
 	parent    *BaseScope
 	children  []*BaseScope
 	variables map[string]*Variable
+	functions map[string]value.IVOR
 }
 
 func (s *BaseScope) Name() string {
@@ -64,17 +65,52 @@ func (s *BaseScope) GetVariable(name string) *Variable {
 	return nil
 }
 
+func (s *BaseScope) AddFunction(name string, function value.IVOR) {
+	s.functions[name] = function
+}
+
+func (s *BaseScope) GetFunction(name string) value.IVOR {
+	// Todo: suport for structs properties
+
+	initialScope := s
+
+	for {
+		if function, ok := initialScope.functions[name]; ok {
+			return function
+		}
+
+		if initialScope.parent == nil {
+			break
+		}
+
+		initialScope = initialScope.parent
+	}
+
+	return nil
+}
+
 func (s *BaseScope) Reset() {
 	s.variables = make(map[string]*Variable)
 	s.children = make([]*BaseScope, 0)
+	s.functions = make(map[string]value.IVOR)
 }
 
 func NewGlobalScope() *BaseScope {
+
+	// register built-in functions
+
+	funcs := make(map[string]value.IVOR)
+
+	for k, v := range DefaultBuiltInFunctions {
+		funcs[k] = v
+	}
+
 	return &BaseScope{
 		name:      "global",
 		variables: make(map[string]*Variable),
 		children:  make([]*BaseScope, 0),
 		parent:    nil,
+		functions: funcs,
 	}
 }
 
@@ -112,6 +148,14 @@ func (s *ScopeTrace) AddVariable(name string, varType string, value value.IVOR, 
 
 func (s *ScopeTrace) GetVariable(name string) *Variable {
 	return s.CurrentScope.GetVariable(name)
+}
+
+func (s *ScopeTrace) AddFunction(name string, function value.IVOR) {
+	s.CurrentScope.AddFunction(name, function)
+}
+
+func (s *ScopeTrace) GetFunction(name string) value.IVOR {
+	return s.CurrentScope.GetFunction(name)
 }
 
 func (s *ScopeTrace) Print() {

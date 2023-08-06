@@ -14,12 +14,22 @@ type ReplVisitor struct {
 	compiler.BaseTSwiftLanguageVisitor
 	ScopeTrace *repl.ScopeTrace
 	CallStack  *repl.CallStack
+	Console    *repl.Console
 }
 
 func NewVisitor() *ReplVisitor {
 	return &ReplVisitor{
 		ScopeTrace: repl.NewScopeTrace(),
 		CallStack:  repl.NewCallStack(),
+		Console:    repl.NewConsole(),
+	}
+}
+
+func (v *ReplVisitor) GetReplContext() *repl.ReplContext {
+	return &repl.ReplContext{
+		Console:    v.Console,
+		ScopeTrace: v.ScopeTrace,
+		CallStack:  v.CallStack,
 	}
 }
 
@@ -62,6 +72,10 @@ func (v *ReplVisitor) VisitStmt(ctx *compiler.StmtContext) interface{} {
 		v.Visit(ctx.Guard_stmt())
 	} else if ctx.Transfer_stmt() != nil {
 		v.Visit(ctx.Transfer_stmt())
+	} else if ctx.Func_call() != nil {
+		v.Visit(ctx.Func_call())
+	} else {
+		log.Fatal("Statement not found")
 	}
 
 	return nil
@@ -244,6 +258,10 @@ func (v *ReplVisitor) VisitIdExp(ctx *compiler.IdExpContext) interface{} {
 
 func (v *ReplVisitor) VisitParenExp(ctx *compiler.ParenExpContext) interface{} {
 	return v.Visit(ctx.Expr())
+}
+
+func (v *ReplVisitor) VisitFuncCallExp(ctx *compiler.FuncCallExpContext) interface{} {
+	return v.Visit(ctx.Func_call())
 }
 
 func (v *ReplVisitor) VisitUnaryExp(ctx *compiler.UnaryExpContext) interface{} {
@@ -584,4 +602,70 @@ func (v *ReplVisitor) VisitContinueStmt(ctx *compiler.ContinueStmtContext) inter
 
 	peek.Action = repl.ContinueItem
 	panic(peek)
+}
+
+func (v *ReplVisitor) VisitFuncCall(ctx *compiler.FuncCallContext) interface{} {
+
+	funcName := v.Visit(ctx.Id_pattern()).(string)
+
+	funcObj := v.ScopeTrace.GetFunction(funcName)
+
+	if funcObj == nil {
+		log.Fatal("Function not found")
+	}
+
+	args := make([]*repl.Argument, 0)
+
+	if ctx.Arg_list() != nil {
+		args = v.Visit(ctx.Arg_list()).([]*repl.Argument)
+	}
+
+	switch funcObj.Type() {
+	case value.IVOR_BUILTIN_FUNCTION:
+		returnValue, ok, msg := funcObj.(*repl.BuiltInFunction).Exec(v.GetReplContext(), args)
+
+		if !ok {
+			log.Fatal(msg)
+		}
+
+		return returnValue
+	default:
+		log.Fatal("Function type not found")
+	}
+
+	return value.DefaultNilValue
+}
+
+func (v *ReplVisitor) VisitArgList(ctx *compiler.ArgListContext) interface{} {
+
+	args := make([]*repl.Argument, 0)
+
+	for _, arg := range ctx.AllFunc_arg() {
+		args = append(args, v.Visit(arg).(*repl.Argument))
+	}
+
+	return args
+
+}
+
+func (v *ReplVisitor) VisitFuncArg(ctx *compiler.FuncArgContext) interface{} {
+
+	argName := ""
+	passByReference := false
+	argValue := v.Visit(ctx.Expr()).(value.IVOR)
+
+	if ctx.ID() != nil {
+		argName = ctx.ID().GetText()
+	}
+
+	if ctx.ANPERSAND() != nil {
+		passByReference = true
+	}
+
+	return &repl.Argument{
+		Name:            argName,
+		Object:          argValue,
+		PassByReference: passByReference,
+	}
+
 }
