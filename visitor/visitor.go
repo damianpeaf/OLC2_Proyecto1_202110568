@@ -384,6 +384,7 @@ func (v *ReplVisitor) VisitSwitchStmt(ctx *compiler.SwitchStmtContext) interface
 
 	v.CallStack.Push(switchItem)
 
+	// handle break statements from call stack
 	defer func() {
 
 		v.ScopeTrace.PopScope()       // pop switch scope
@@ -403,6 +404,7 @@ func (v *ReplVisitor) VisitSwitchStmt(ctx *compiler.SwitchStmtContext) interface
 
 		caseValue := v.GetCaseValue(switchCase)
 
+		// ? use binary strat
 		if caseValue.Type() != mainValue.Type() {
 			// warning
 			log.Fatal("Case value must be same type as switch value")
@@ -415,6 +417,7 @@ func (v *ReplVisitor) VisitSwitchStmt(ctx *compiler.SwitchStmtContext) interface
 	}
 
 	// evaluate default
+	// ! fix: default case must be evaluated after all cases only if no case was evaluated
 	if ctx.Default_case() != nil {
 		v.Visit(ctx.Default_case())
 	}
@@ -453,11 +456,6 @@ func (v *ReplVisitor) VisitDefaultCase(ctx *compiler.DefaultCaseContext) interfa
 func (v *ReplVisitor) VisitWhileStmt(ctx *compiler.WhileStmtContext) interface{} {
 
 	condition := v.Visit(ctx.Expr()).(value.IVOR)
-
-	if condition.Type() != value.IVOR_BOOL {
-		log.Fatal("Condition must be a boolean")
-	}
-
 	// Push scope
 	whileScope := v.ScopeTrace.PushScope("while")
 
@@ -472,10 +470,27 @@ func (v *ReplVisitor) VisitWhileStmt(ctx *compiler.WhileStmtContext) interface{}
 
 	v.CallStack.Push(whileItem)
 
-	defer func() {
+	v.VisitInnerWhile(ctx, condition, whileScope, whileItem)
 
-		v.ScopeTrace.PopScope()      // pop while scope
-		v.CallStack.Clean(whileItem) // clean item if it's still in call stack
+	v.ScopeTrace.PopScope()      // pop while scope
+	v.CallStack.Clean(whileItem) // clean item if it's still in call stack
+
+	return nil
+}
+
+func (v *ReplVisitor) VisitInnerWhile(ctx *compiler.WhileStmtContext, condition value.IVOR, whileScope *repl.BaseScope, whileItem *repl.CallStackItem) {
+
+	// ? use binary strat
+	if condition.Type() != value.IVOR_BOOL {
+		log.Fatal("Condition must be a boolean")
+		return
+	}
+
+	// reset scope
+	whileScope.Reset()
+
+	// handle break and continue statements from call stack
+	defer func() {
 
 		if item, ok := recover().(*repl.CallStackItem); item != nil && ok {
 
@@ -486,18 +501,8 @@ func (v *ReplVisitor) VisitWhileStmt(ctx *compiler.WhileStmtContext) interface{}
 
 			// Continue
 			if item.IsAction(repl.ContinueItem) {
-
-				condition = v.Visit(ctx.Expr()).(value.IVOR)
-
-				if condition.Type() != value.IVOR_BOOL {
-					log.Fatal("Condition must be a boolean")
-				}
-
-				// reset scope
-				whileScope.Reset()
-
-				// Continue
-				v.VisitInnerWhile(ctx, condition, whileScope)
+				item.ResetAction()                                       // reset action, can be used again
+				v.VisitInnerWhile(ctx, condition, whileScope, whileItem) // continue
 
 			} else if item.IsAction(repl.BreakItem) {
 				// Break
@@ -506,12 +511,6 @@ func (v *ReplVisitor) VisitWhileStmt(ctx *compiler.WhileStmtContext) interface{}
 		}
 	}()
 
-	v.VisitInnerWhile(ctx, condition, whileScope)
-
-	return nil
-}
-
-func (v *ReplVisitor) VisitInnerWhile(ctx *compiler.WhileStmtContext, condition value.IVOR, whileScope *repl.BaseScope) {
 	for condition.(*value.BoolValue).InternalValue {
 
 		for _, stmt := range ctx.AllStmt() {
@@ -574,37 +573,28 @@ func (v *ReplVisitor) VisitReturnStmt(ctx *compiler.ReturnStmtContext) interface
 
 func (v *ReplVisitor) VisitBreakStmt(ctx *compiler.BreakStmtContext) interface{} {
 
-	peek := v.CallStack.Pop()
+	exits, item := v.CallStack.IsBreakEnv()
 
-	if !peek.IsType(repl.BreakItem) {
-		log.Fatal("Break statement must be inside a loop or switch")
+	if !exits {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "La sentencia break debe estar dentro de un ciclo o un switch")
+		return nil
 	}
 
-	peek.Action = repl.BreakItem
-	panic(peek)
+	item.Action = repl.BreakItem
+	panic(item)
 }
 
 func (v *ReplVisitor) VisitContinueStmt(ctx *compiler.ContinueStmtContext) interface{} {
 
-	peek := v.CallStack.Pop()
+	exits, item := v.CallStack.IsContinueEnv()
 
-	for !peek.IsType(repl.ContinueItem) {
-		peek = v.CallStack.Pop()
-
-		// ? Semantic validation
-		// ? Evaluate items in general, without removing them from the stack
-		if peek == nil {
-			log.Fatal("Continue statement must be inside a loop")
-		}
-
-		if peek.IsType(repl.ReturnItem) {
-			log.Fatal("Continue statement must be inside a loop")
-		}
-
+	if !exits {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "La sentencia continue debe estar dentro de un ciclo")
+		return nil
 	}
 
-	peek.Action = repl.ContinueItem
-	panic(peek)
+	item.Action = repl.ContinueItem
+	panic(item)
 }
 
 func (v *ReplVisitor) VisitFuncCall(ctx *compiler.FuncCallContext) interface{} {

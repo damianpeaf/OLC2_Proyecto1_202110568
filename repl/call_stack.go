@@ -29,6 +29,10 @@ func (csi *CallStackItem) IsAction(a string) bool {
 	return csi.Action == a
 }
 
+func (csi *CallStackItem) ResetAction() {
+	csi.Action = ""
+}
+
 type CallStack struct {
 	Items []*CallStackItem
 }
@@ -56,6 +60,7 @@ func (cs *CallStack) In(item *CallStackItem) bool {
 	return false
 }
 
+// Remove items from the stack until the item is found
 func (cs *CallStack) Clean(item *CallStackItem) {
 
 	if !cs.In(item) {
@@ -70,6 +75,54 @@ func (cs *CallStack) Clean(item *CallStackItem) {
 		}
 	}
 
+}
+
+func (cs *CallStack) IsContinueEnv() (bool, *CallStackItem) {
+
+	// continue can be only in a loop
+	// so it can be in break env like switch
+	// but cannot interfer a function call that is a return env
+	start := len(cs.Items) - 1
+
+	for i := start; i >= 0; i-- {
+		if cs.Items[i].IsType(ContinueItem) {
+			return true, cs.Items[i]
+		}
+
+		if cs.Items[i].IsType(ReturnItem) {
+			return false, nil
+		}
+	}
+
+	return false, nil
+
+}
+
+func (cs *CallStack) IsBreakEnv() (bool, *CallStackItem) {
+	// break item must be the peek of the stack, cannot interrupt a function call or a loop
+
+	if len(cs.Items) == 0 {
+		return false, nil
+	}
+
+	if cs.Items[len(cs.Items)-1].IsType(BreakItem) {
+		return true, cs.Items[len(cs.Items)-1]
+	}
+
+	return false, nil
+}
+
+func (cs *CallStack) IsReturnEnv() (bool, *CallStackItem) {
+
+	// return item can interfer with any other item
+
+	for i := len(cs.Items) - 1; i >= 0; i-- {
+		if cs.Items[i].IsType(ReturnItem) {
+			return true, cs.Items[i]
+		}
+	}
+
+	return false, nil
 }
 
 func (cs *CallStack) Len() int {

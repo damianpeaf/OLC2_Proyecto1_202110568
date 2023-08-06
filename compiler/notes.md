@@ -12,6 +12,8 @@
     3.1 validate transfer stmt on guard stmt
 4. Operators
     4.1 Null makes all result null
+5. Switch
+    5.1. Continue with next case if no break
 
 # Next Steps
 1. if stmt          ✅
