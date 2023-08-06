@@ -23,3 +23,7 @@ func (c *Console) Clear() {
 func NewConsole() *Console {
 	return &Console{}
 }
+
+func (c *Console) GetOutput() string {
+	return c.output
+}

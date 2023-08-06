@@ -3,15 +3,22 @@ package main
 import (
 	"fmt"
 	"main/compiler"
+	"main/repl"
 	"main/visitor"
 
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
 func main() {
 
 	app := fiber.New()
+
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowHeaders: "Origin, Content-Type, Accept",
+	}))
 
 	app.Post("/compile", func(c *fiber.Ctx) error {
 
@@ -34,7 +41,16 @@ func main() {
 		replVisitor.ScopeTrace.Print()
 		replVisitor.Console.Show()
 
-		return c.SendString("compiled")
+		//
+		return c.JSON(struct {
+			Errors []repl.Error `json:"errors"`
+			Output string       `json:"output"`
+		}{
+			Errors: replVisitor.ErrorTable.Errors,
+			Output: replVisitor.Console.GetOutput(),
+			// TODO: CST report
+			// TODO: scope trace report
+		})
 
 	})
 

@@ -7,4 +7,6 @@ type ReplContext struct {
 	ScopeTrace *ScopeTrace
 	// The call stack is the stack of breakable, continueable and returnable items
 	CallStack *CallStack
+	// Error table is the table of errors
+	ErrorTable *ErrorTable
 }

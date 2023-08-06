@@ -15,6 +15,7 @@ type ReplVisitor struct {
 	ScopeTrace *repl.ScopeTrace
 	CallStack  *repl.CallStack
 	Console    *repl.Console
+	ErrorTable *repl.ErrorTable
 }
 
 func NewVisitor() *ReplVisitor {
@@ -22,6 +23,7 @@ func NewVisitor() *ReplVisitor {
 		ScopeTrace: repl.NewScopeTrace(),
 		CallStack:  repl.NewCallStack(),
 		Console:    repl.NewConsole(),
+		ErrorTable: repl.NewErrorTable(),
 	}
 }
 
@@ -30,6 +32,7 @@ func (v *ReplVisitor) GetReplContext() *repl.ReplContext {
 		Console:    v.Console,
 		ScopeTrace: v.ScopeTrace,
 		CallStack:  v.CallStack,
+		ErrorTable: v.ErrorTable,
 	}
 }
 

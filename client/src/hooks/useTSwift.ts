@@ -2,6 +2,11 @@ import { useContext } from "react"
 import { DocumentFile, TSwiftContext } from "../context"
 import { fireDangerToast, fireScucessToast } from "../components/toasts"
 
+export type ApiResponse = {
+    output: string
+    errors: any[] | null
+}
+
 export const useTSwift = () => {
 
     const { dispatch, ...state } = useContext(TSwiftContext)
@@ -65,8 +70,6 @@ export const useTSwift = () => {
         const programInput = state.currentDocument.content
         setTerminalContent('Ejecutando programa...')
 
-        // Todo: fetch TSwift runtime
-
         // form-data
         const formData = new FormData()
         formData.append('code', programInput)
@@ -76,20 +79,20 @@ export const useTSwift = () => {
             body: formData
         })
 
-
+        const { errors, output } = await res.json() as ApiResponse
 
         // * Set terminal content
-        // setTerminalContent()
+        setTerminalContent(output)
 
         // * Set errors
         // dispatch({ type: 'set-errors', payload: { errors: runtime.ast.context.errorTable.errors } })
 
         // * Fire toast
-        // if (runtime.ast.context.errorTable.errors.length > 0) {
-        //     fireDangerToast('Programa ejecutado con errores')
-        // } else {
-        //     fireScucessToast('Programa ejecutado con éxito')
-        // }
+        if (errors) {
+            fireDangerToast('Programa ejecutado con errores')
+        } else {
+            fireScucessToast('Programa ejecutado con éxito')
+        }
 
         // * CST graphviz report
         // dispatch({ type: 'set-graphviz-content', payload: { content: runtime.ast.graphviz } })
