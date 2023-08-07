@@ -142,6 +142,10 @@ func (s *ScopeTrace) PopScope() {
 	s.CurrentScope = s.CurrentScope.Parent()
 }
 
+func (s *ScopeTrace) Reset() {
+	s.CurrentScope = s.GlobalScope
+}
+
 func (s *ScopeTrace) AddVariable(name string, varType string, value value.IVOR, isConst bool) *Variable {
 	return s.CurrentScope.AddVariable(name, varType, value, isConst)
 }

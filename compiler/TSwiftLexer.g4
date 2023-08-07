@@ -31,6 +31,7 @@ BREAK_KW: 'break';
 CONTINUE_KW: 'continue';
 RETURN_KW: 'return';
 GUARD_KW: 'guard';
+INOUT_KW: 'inout';
 
 // ...
 IN_KW: 'in';

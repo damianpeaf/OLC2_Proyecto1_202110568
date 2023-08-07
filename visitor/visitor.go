@@ -77,6 +77,8 @@ func (v *ReplVisitor) VisitStmt(ctx *compiler.StmtContext) interface{} {
 		v.Visit(ctx.Transfer_stmt())
 	} else if ctx.Func_call() != nil {
 		v.Visit(ctx.Func_call())
+	} else if ctx.Func_dcl() != nil {
+		v.Visit(ctx.Func_dcl())
 	} else {
 		log.Fatal("Statement not found")
 	}
@@ -92,6 +94,7 @@ func (v *ReplVisitor) VisitTypeValueDecl(ctx *compiler.TypeValueDeclContext) int
 
 	isConst := isDeclConst(ctx.Var_type().GetText())
 	varName := ctx.ID().GetText()
+	// todo: Change primitive type to a more general type
 	varType := ctx.Primitive_type().GetText()
 	varValue := v.Visit(ctx.Expr()).(value.IVOR)
 
@@ -131,6 +134,7 @@ func (v *ReplVisitor) VisitTypeDecl(ctx *compiler.TypeDeclContext) interface{} {
 
 	isConst := isDeclConst(ctx.Var_type().GetText())
 	varName := ctx.ID().GetText()
+	// todo: Change primitive type to a more general type
 	varType := ctx.Primitive_type().GetText()
 
 	variable := v.ScopeTrace.AddVariable(varName, varType, value.DefaultNilValue, isConst)
@@ -568,7 +572,22 @@ func (v *ReplVisitor) VisitGuardStmt(ctx *compiler.GuardStmtContext) interface{}
 }
 
 func (v *ReplVisitor) VisitReturnStmt(ctx *compiler.ReturnStmtContext) interface{} {
-	return nil
+
+	exits, item := v.CallStack.IsReturnEnv()
+
+	if !exits {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "La sentencia return debe estar dentro de una funcion")
+		return nil
+	}
+
+	item.ReturnValue = value.DefaultNilValue
+	item.Action = repl.ReturnItem
+
+	if ctx.Expr() != nil {
+		item.ReturnValue = v.Visit(ctx.Expr()).(value.IVOR)
+	}
+
+	panic(item)
 }
 
 func (v *ReplVisitor) VisitBreakStmt(ctx *compiler.BreakStmtContext) interface{} {
@@ -622,6 +641,11 @@ func (v *ReplVisitor) VisitFuncCall(ctx *compiler.FuncCallContext) interface{} {
 		}
 
 		return returnValue
+
+	case value.IVOR_FUNCTION:
+		returnValue := funcObj.(repl.Function).Exec(v.GetReplContext(), args, ctx.GetStart())
+		return returnValue
+
 	default:
 		log.Fatal("Function type not found")
 	}
@@ -659,6 +683,76 @@ func (v *ReplVisitor) VisitFuncArg(ctx *compiler.FuncArgContext) interface{} {
 		Name:            argName,
 		Object:          argValue,
 		PassByReference: passByReference,
+		Token:           ctx.GetStart(),
+	}
+
+}
+
+func (v *ReplVisitor) VisitFuncDecl(ctx *compiler.FuncDeclContext) interface{} {
+
+	// TODO: supoort for structs functions
+	if v.ScopeTrace.CurrentScope != v.ScopeTrace.GlobalScope {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Las funciones solo pueden ser declaradas en el scope global")
+	}
+
+	funcName := ctx.ID().GetText()
+	params := v.Visit(ctx.Param_list()).([]*repl.Param)
+	returnType := value.IVOR_NIL
+
+	if ctx.Primitive_type() != nil {
+		returnType = ctx.Primitive_type().GetText()
+	}
+
+	body := ctx.AllStmt()
+
+	function := repl.Function{ // pointer ?
+		Name:       funcName,
+		Param:      params,
+		ReturnType: returnType,
+		Body:       body,
+		DeclScope:  v.ScopeTrace.CurrentScope,
+	}
+
+	v.ScopeTrace.AddFunction(funcName, function)
+
+	return nil
+}
+
+func (v *ReplVisitor) VisitParamList(ctx *compiler.ParamListContext) interface{} {
+
+	params := make([]*repl.Param, 0)
+
+	for _, param := range ctx.AllFunc_param() {
+		params = append(params, v.Visit(param).(*repl.Param))
+	}
+
+	return params
+}
+
+func (v *ReplVisitor) VisitFuncParam(ctx *compiler.FuncParamContext) interface{} {
+
+	externName := ""
+
+	if ctx.ID(0) != nil {
+		externName = ctx.ID(0).GetText()
+	}
+
+	innerName := ctx.ID(1).GetText()
+
+	passByReference := false
+
+	if ctx.INOUT_KW() != nil {
+		passByReference = true
+	}
+
+	// todo: Change primitive type to a more general type
+	paramType := ctx.Primitive_type().GetText()
+
+	return &repl.Param{
+		ExternName:      externName,
+		InnerName:       innerName,
+		PassByReference: passByReference,
+		Type:            paramType,
 	}
 
 }

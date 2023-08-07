@@ -158,3 +158,15 @@ func (v *BaseTSwiftLanguageVisitor) VisitArgList(ctx *ArgListContext) interface{
 func (v *BaseTSwiftLanguageVisitor) VisitFuncArg(ctx *FuncArgContext) interface{} {
 	return v.VisitChildren(ctx)
 }
+
+func (v *BaseTSwiftLanguageVisitor) VisitFuncDecl(ctx *FuncDeclContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitParamList(ctx *ParamListContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitFuncParam(ctx *FuncParamContext) interface{} {
+	return v.VisitChildren(ctx)
+}

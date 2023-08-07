@@ -18,7 +18,8 @@ stmt:
 	| while_stmt
 	| for_stmt
 	| guard_stmt
-	| func_call delimiter;
+	| func_call delimiter
+	| func_dcl;
 
 decl_stmt:
 	var_type ID COLON primitive_type EQUALS expr		# TypeValueDecl
@@ -97,3 +98,9 @@ func_call: id_pattern LPAREN arg_list? RPAREN # FuncCall;
 // external names -> num: value, num2: value2
 arg_list: func_arg (COMMA func_arg)* # ArgList;
 func_arg: (ID COLON)? (ANPERSAND)? expr # FuncArg;
+
+func_dcl:
+	FUNC_KW ID LPAREN param_list? RPAREN (ARROW primitive_type)? LBRACE stmt* RBRACE # FuncDecl;
+
+param_list: func_param (COMMA func_param)* # ParamList;
+func_param: ID? ID COLON INOUT_KW? primitive_type # FuncParam;

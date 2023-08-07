@@ -8,6 +8,7 @@ const (
 	IVOR_CHARACTER        = "Character"
 	IVOR_NIL              = "nil"
 	IVOR_BUILTIN_FUNCTION = "builtin_function"
+	IVOR_FUNCTION         = "function"
 )
 
 type IVOR interface {

@@ -3,11 +3,11 @@
     1.1. Type checking
         1.1.1. Int literal can be assigned to a float variable, but not vice versa.
         1.1.2. String literal of length 1 can be assigned to a char variable.
-        1.1.3. Simple types are assign by value. Complex types are assign by reference.
+        1.1.3. Simple types are assign by value. Complex types are assign by reference. ????
     1.2 Constant can't be reassigned.
 2. Scope related
     2.1 Variable can't be declared twice in the same scope.
-    2.2 Search in parent scope if not found in current scope.
+    2.2 Search in parent scope if not found in current scope. ✅
 3. Semantic visitor
     3.1 validate transfer stmt on guard stmt
 4. Operators
@@ -25,8 +25,16 @@
     6.1. break      ✅  
     6.2. continue   ✅
 7. function
-    7.1. builtins
-    7.2. return
+    7.1. builtins   ✅
+    7.2. declaration
+    7.3. call
+    7.4. return
+    ? pass by reference
+8. Complex types
+    8.1. vector
+        8.1.1. iterator
+    8.2. matrix
+    8.3. struct
 
 
 # Improvements

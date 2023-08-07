@@ -120,4 +120,13 @@ type TSwiftLanguageVisitor interface {
 
 	// Visit a parse tree produced by TSwiftLanguage#FuncArg.
 	VisitFuncArg(ctx *FuncArgContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#FuncDecl.
+	VisitFuncDecl(ctx *FuncDeclContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#ParamList.
+	VisitParamList(ctx *ParamListContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#FuncParam.
+	VisitFuncParam(ctx *FuncParamContext) interface{}
 }
