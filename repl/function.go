@@ -10,29 +10,33 @@ import (
 )
 
 type Function struct {
-	Name       string
-	Param      []*Param
-	ReturnType string
-	Body       []compiler.IStmtContext
-	DeclScope  *BaseScope
+	Name        string
+	Param       []*Param
+	ReturnType  string
+	Body        []compiler.IStmtContext
+	DeclScope   *BaseScope
+	ReturnValue value.IVOR
 	// TODO: suport for structs, mutator, self, etc
 }
 
-func (f Function) Value() interface{} {
+func (f *Function) Value() interface{} {
 	return f
 }
 
-func (f Function) Type() string {
+func (f *Function) Type() string {
 	return value.IVOR_FUNCTION
 }
 
-func (f Function) Exec(context *ReplContext, args []*Argument, token antlr.Token) value.IVOR {
+func (f *Function) Exec(visitor *ReplVisitor, args []*Argument, token antlr.Token) {
+
+	context := visitor.GetReplContext()
 
 	// validate args
 	argsOk, argsMap := f.ValidateArgs(context, args, token)
 
 	if !argsOk {
-		return f.ValidateReturn(context, value.DefaultNilValue)
+		f.ValidateReturn(context, value.DefaultNilValue)
+		return
 	}
 
 	// create new scope
@@ -57,7 +61,7 @@ func (f Function) Exec(context *ReplContext, args []*Argument, token antlr.Token
 
 	// handle return from callstack
 
-	defer func() value.IVOR {
+	defer func() {
 
 		context.CallStack.Clean(funcItem)              // clean callstack
 		context.ScopeTrace.PopScope()                  // pop function scope
@@ -70,18 +74,24 @@ func (f Function) Exec(context *ReplContext, args []*Argument, token antlr.Token
 			}
 
 			// validate return type
-			return f.ValidateReturn(context, item.ReturnValue) // return value from return statement
+			f.ValidateReturn(context, item.ReturnValue) // return value from return statement
+			return
 		}
 
-		return f.ValidateReturn(context, value.DefaultNilValue)
+		f.ValidateReturn(context, value.DefaultNilValue)
+		return
 	}()
 
 	// evaluate body
+	for _, stmt := range f.Body {
+		visitor.Visit(stmt)
+	}
 
-	return f.ValidateReturn(context, value.DefaultNilValue)
+	f.ValidateReturn(context, value.DefaultNilValue)
+	return
 }
 
-func (f Function) ValidateArgs(context *ReplContext, args []*Argument, token antlr.Token) (bool, map[string]*Argument) {
+func (f *Function) ValidateArgs(context *ReplContext, args []*Argument, token antlr.Token) (bool, map[string]*Argument) {
 
 	// validate arg count
 	if len(args) != len(f.Param) {
@@ -138,12 +148,13 @@ func (f Function) ValidateArgs(context *ReplContext, args []*Argument, token ant
 	return true, finalArgsMap
 }
 
-func (f Function) ValidateReturn(context *ReplContext, val value.IVOR) value.IVOR {
+func (f *Function) ValidateReturn(context *ReplContext, val value.IVOR) {
 
 	if val.Type() != f.ReturnType {
 		context.ErrorTable.NewSemanticError(nil, fmt.Sprintf("Tipo de retorno invalido, se esperaba %s, se obtuvo %s", f.ReturnType, val.Type()))
-		return value.DefaultNilValue
+
+		f.ReturnValue = value.DefaultNilValue
 	}
 
-	return val
+	f.ReturnValue = val
 }

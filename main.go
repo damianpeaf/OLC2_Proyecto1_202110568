@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"main/compiler"
 	"main/repl"
-	"main/visitor"
 
 	"github.com/antlr4-go/antlr/v4"
 	"github.com/gofiber/fiber/v2"
@@ -35,7 +34,7 @@ func main() {
 
 		tree := parser.Program()
 
-		replVisitor := visitor.NewVisitor()
+		replVisitor := repl.NewVisitor()
 		replVisitor.Visit(tree)
 
 		replVisitor.ScopeTrace.Print()

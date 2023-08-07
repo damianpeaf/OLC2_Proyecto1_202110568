@@ -1,9 +1,8 @@
-package visitor
+package repl
 
 import (
 	"log"
 	"main/compiler"
-	"main/repl"
 	"main/value"
 	"strconv"
 
@@ -12,23 +11,23 @@ import (
 
 type ReplVisitor struct {
 	compiler.BaseTSwiftLanguageVisitor
-	ScopeTrace *repl.ScopeTrace
-	CallStack  *repl.CallStack
-	Console    *repl.Console
-	ErrorTable *repl.ErrorTable
+	ScopeTrace *ScopeTrace
+	CallStack  *CallStack
+	Console    *Console
+	ErrorTable *ErrorTable
 }
 
 func NewVisitor() *ReplVisitor {
 	return &ReplVisitor{
-		ScopeTrace: repl.NewScopeTrace(),
-		CallStack:  repl.NewCallStack(),
-		Console:    repl.NewConsole(),
-		ErrorTable: repl.NewErrorTable(),
+		ScopeTrace: NewScopeTrace(),
+		CallStack:  NewCallStack(),
+		Console:    NewConsole(),
+		ErrorTable: NewErrorTable(),
 	}
 }
 
-func (v *ReplVisitor) GetReplContext() *repl.ReplContext {
-	return &repl.ReplContext{
+func (v *ReplVisitor) GetReplContext() *ReplContext {
+	return &ReplContext{
 		Console:    v.Console,
 		ScopeTrace: v.ScopeTrace,
 		CallStack:  v.CallStack,
@@ -181,7 +180,7 @@ func (v *ReplVisitor) VisitArithmeticAssign(ctx *compiler.ArithmeticAssignContex
 
 	op := string(ctx.GetOp().GetText()[0])
 
-	strat, ok := repl.BinaryStrats[op]
+	strat, ok := BinaryStrats[op]
 
 	if !ok {
 		log.Fatal("Binary operator not found")
@@ -275,7 +274,7 @@ func (v *ReplVisitor) VisitUnaryExp(ctx *compiler.UnaryExpContext) interface{} {
 
 	exp := v.Visit(ctx.Expr()).(value.IVOR)
 
-	strat, ok := repl.UnaryStrats[ctx.GetOp().GetText()]
+	strat, ok := UnaryStrats[ctx.GetOp().GetText()]
 
 	if !ok {
 		log.Fatal("Unary operator not found")
@@ -296,7 +295,7 @@ func (v *ReplVisitor) VisitBinaryExp(ctx *compiler.BinaryExpContext) interface{}
 	left := v.Visit(ctx.GetLeft()).(value.IVOR)
 	right := v.Visit(ctx.GetRight()).(value.IVOR)
 
-	strat, ok := repl.BinaryStrats[ctx.GetOp().GetText()]
+	strat, ok := BinaryStrats[ctx.GetOp().GetText()]
 
 	if !ok {
 		log.Fatal("Binary operator not found")
@@ -379,10 +378,10 @@ func (v *ReplVisitor) VisitSwitchStmt(ctx *compiler.SwitchStmtContext) interface
 	v.ScopeTrace.PushScope("switch")
 
 	// Push break switchItem to call stack [breakable]
-	switchItem := &repl.CallStackItem{
+	switchItem := &CallStackItem{
 		ReturnValue: value.DefaultNilValue,
 		Type: []string{
-			repl.BreakItem,
+			BreakItem,
 		},
 	}
 
@@ -394,7 +393,7 @@ func (v *ReplVisitor) VisitSwitchStmt(ctx *compiler.SwitchStmtContext) interface
 		v.ScopeTrace.PopScope()       // pop switch scope
 		v.CallStack.Clean(switchItem) // clean item if it's still in call stack
 
-		if item, ok := recover().(*repl.CallStackItem); item != nil && ok {
+		if item, ok := recover().(*CallStackItem); item != nil && ok {
 
 			// Not a switch item, propagate panic
 			if item != switchItem {
@@ -464,11 +463,11 @@ func (v *ReplVisitor) VisitWhileStmt(ctx *compiler.WhileStmtContext) interface{}
 	whileScope := v.ScopeTrace.PushScope("while")
 
 	// Push whileItem to call stack [breakable, continuable]
-	whileItem := &repl.CallStackItem{
+	whileItem := &CallStackItem{
 		ReturnValue: value.DefaultNilValue,
 		Type: []string{
-			repl.BreakItem,
-			repl.ContinueItem,
+			BreakItem,
+			ContinueItem,
 		},
 	}
 
@@ -482,7 +481,7 @@ func (v *ReplVisitor) VisitWhileStmt(ctx *compiler.WhileStmtContext) interface{}
 	return nil
 }
 
-func (v *ReplVisitor) VisitInnerWhile(ctx *compiler.WhileStmtContext, condition value.IVOR, whileScope *repl.BaseScope, whileItem *repl.CallStackItem) {
+func (v *ReplVisitor) VisitInnerWhile(ctx *compiler.WhileStmtContext, condition value.IVOR, whileScope *BaseScope, whileItem *CallStackItem) {
 
 	// ? use binary strat
 	if condition.Type() != value.IVOR_BOOL {
@@ -496,7 +495,7 @@ func (v *ReplVisitor) VisitInnerWhile(ctx *compiler.WhileStmtContext, condition 
 	// handle break and continue statements from call stack
 	defer func() {
 
-		if item, ok := recover().(*repl.CallStackItem); item != nil && ok {
+		if item, ok := recover().(*CallStackItem); item != nil && ok {
 
 			// Not a while item, propagate panic
 			if item != whileItem {
@@ -504,11 +503,11 @@ func (v *ReplVisitor) VisitInnerWhile(ctx *compiler.WhileStmtContext, condition 
 			}
 
 			// Continue
-			if item.IsAction(repl.ContinueItem) {
+			if item.IsAction(ContinueItem) {
 				item.ResetAction()                                       // reset action, can be used again
 				v.VisitInnerWhile(ctx, condition, whileScope, whileItem) // continue
 
-			} else if item.IsAction(repl.BreakItem) {
+			} else if item.IsAction(BreakItem) {
 				// Break
 				return
 			}
@@ -581,7 +580,7 @@ func (v *ReplVisitor) VisitReturnStmt(ctx *compiler.ReturnStmtContext) interface
 	}
 
 	item.ReturnValue = value.DefaultNilValue
-	item.Action = repl.ReturnItem
+	item.Action = ReturnItem
 
 	if ctx.Expr() != nil {
 		item.ReturnValue = v.Visit(ctx.Expr()).(value.IVOR)
@@ -599,7 +598,7 @@ func (v *ReplVisitor) VisitBreakStmt(ctx *compiler.BreakStmtContext) interface{}
 		return nil
 	}
 
-	item.Action = repl.BreakItem
+	item.Action = BreakItem
 	panic(item)
 }
 
@@ -612,7 +611,7 @@ func (v *ReplVisitor) VisitContinueStmt(ctx *compiler.ContinueStmtContext) inter
 		return nil
 	}
 
-	item.Action = repl.ContinueItem
+	item.Action = ContinueItem
 	panic(item)
 }
 
@@ -626,15 +625,15 @@ func (v *ReplVisitor) VisitFuncCall(ctx *compiler.FuncCallContext) interface{} {
 		log.Fatal("Function not found")
 	}
 
-	args := make([]*repl.Argument, 0)
+	args := make([]*Argument, 0)
 
 	if ctx.Arg_list() != nil {
-		args = v.Visit(ctx.Arg_list()).([]*repl.Argument)
+		args = v.Visit(ctx.Arg_list()).([]*Argument)
 	}
 
 	switch funcObj.Type() {
 	case value.IVOR_BUILTIN_FUNCTION:
-		returnValue, ok, msg := funcObj.(*repl.BuiltInFunction).Exec(v.GetReplContext(), args)
+		returnValue, ok, msg := funcObj.(*BuiltInFunction).Exec(v.GetReplContext(), args)
 
 		if !ok {
 			log.Fatal(msg)
@@ -643,8 +642,8 @@ func (v *ReplVisitor) VisitFuncCall(ctx *compiler.FuncCallContext) interface{} {
 		return returnValue
 
 	case value.IVOR_FUNCTION:
-		returnValue := funcObj.(repl.Function).Exec(v.GetReplContext(), args, ctx.GetStart())
-		return returnValue
+		funcObj.(*Function).Exec(v, args, ctx.GetStart())
+		return funcObj.(*Function).ReturnValue
 
 	default:
 		log.Fatal("Function type not found")
@@ -655,10 +654,10 @@ func (v *ReplVisitor) VisitFuncCall(ctx *compiler.FuncCallContext) interface{} {
 
 func (v *ReplVisitor) VisitArgList(ctx *compiler.ArgListContext) interface{} {
 
-	args := make([]*repl.Argument, 0)
+	args := make([]*Argument, 0)
 
 	for _, arg := range ctx.AllFunc_arg() {
-		args = append(args, v.Visit(arg).(*repl.Argument))
+		args = append(args, v.Visit(arg).(*Argument))
 	}
 
 	return args
@@ -669,7 +668,11 @@ func (v *ReplVisitor) VisitFuncArg(ctx *compiler.FuncArgContext) interface{} {
 
 	argName := ""
 	passByReference := false
-	argValue := v.Visit(ctx.Expr()).(value.IVOR)
+	argValue, ok := v.Visit(ctx.Expr()).(value.IVOR)
+
+	if !ok {
+		panic(ctx.Expr().GetText())
+	}
 
 	if ctx.ID() != nil {
 		argName = ctx.ID().GetText()
@@ -679,7 +682,7 @@ func (v *ReplVisitor) VisitFuncArg(ctx *compiler.FuncArgContext) interface{} {
 		passByReference = true
 	}
 
-	return &repl.Argument{
+	return &Argument{
 		Name:            argName,
 		Object:          argValue,
 		PassByReference: passByReference,
@@ -696,7 +699,7 @@ func (v *ReplVisitor) VisitFuncDecl(ctx *compiler.FuncDeclContext) interface{} {
 	}
 
 	funcName := ctx.ID().GetText()
-	params := v.Visit(ctx.Param_list()).([]*repl.Param)
+	params := v.Visit(ctx.Param_list()).([]*Param)
 	returnType := value.IVOR_NIL
 
 	if ctx.Primitive_type() != nil {
@@ -705,7 +708,7 @@ func (v *ReplVisitor) VisitFuncDecl(ctx *compiler.FuncDeclContext) interface{} {
 
 	body := ctx.AllStmt()
 
-	function := repl.Function{ // pointer ?
+	function := &Function{ // pointer ?
 		Name:       funcName,
 		Param:      params,
 		ReturnType: returnType,
@@ -720,10 +723,10 @@ func (v *ReplVisitor) VisitFuncDecl(ctx *compiler.FuncDeclContext) interface{} {
 
 func (v *ReplVisitor) VisitParamList(ctx *compiler.ParamListContext) interface{} {
 
-	params := make([]*repl.Param, 0)
+	params := make([]*Param, 0)
 
 	for _, param := range ctx.AllFunc_param() {
-		params = append(params, v.Visit(param).(*repl.Param))
+		params = append(params, v.Visit(param).(*Param))
 	}
 
 	return params
@@ -748,7 +751,7 @@ func (v *ReplVisitor) VisitFuncParam(ctx *compiler.FuncParamContext) interface{}
 	// todo: Change primitive type to a more general type
 	paramType := ctx.Primitive_type().GetText()
 
-	return &repl.Param{
+	return &Param{
 		ExternName:      externName,
 		InnerName:       innerName,
 		PassByReference: passByReference,
