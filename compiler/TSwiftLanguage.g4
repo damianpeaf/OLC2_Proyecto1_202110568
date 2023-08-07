@@ -48,22 +48,22 @@ literal:
 	| NIL_LITERAL		# NilLiteral;
 
 expr:
-	left = expr op = (PLUS | MINUS) right = expr					# BinaryExp // a + b | a - b
-	| left = expr op = (MULT | DIV) right = expr					# BinaryExp // a * b | a / b
-	| left = expr op = (EQUALS_EQUALS | NOT_EQUALS) right = expr	# BinaryExp // a == b | a != b
+	LPAREN expr RPAREN									# ParenExp // (a)
+	| func_call											# FuncCallExp // a.a.a()
+	| id_pattern										# IdExp // a.a.a
+	| literal											# LiteralExp // 1, 1.0, "a", true, nil
+	| op = (NOT | MINUS) expr							# UnaryExp // !a, -a	
+	| left = expr op = (MULT | DIV | MOD) right = expr	# BinaryExp // a * b, a / b, a % b
+	| left = expr op = (PLUS | MINUS) right = expr		# BinaryExp // a + b, a - b
 	| left = expr op = (
 		LESS_THAN
 		| LESS_THAN_OR_EQUAL
 		| GREATER_THAN
 		| GREATER_THAN_OR_EQUAL
-	) right = expr						# BinaryExp // a < b | a <= b | a > b | a >= b
-	| left = expr op = AND right = expr	# BinaryExp // a && b
-	| left = expr op = OR right = expr	# BinaryExp // a || b
-	| op = (NOT | MINUS) expr			# UnaryExp // !a | -a
-	| LPAREN expr RPAREN				# ParenExp // (a)
-	| ID								# IdExp // a
-	| literal							# LiteralExp
-	| func_call							# FuncCallExp;
+	) right = expr													# BinaryExp // a < b, a <= b, a > b, a >= b
+	| left = expr op = (EQUALS_EQUALS | NOT_EQUALS) right = expr	# BinaryExp // a == b, a != b
+	| left = expr op = AND right = expr								# BinaryExp // a && b
+	| left = expr op = OR right = expr								# BinaryExp; // a || b
 // StructMethodCallExp, StructPropertyCallExp, FunctionCallExp, vector, matrix;  (++, --)?
 
 if_stmt: if_chain (ELSE_KW if_chain)* else_stmt? # IfStmt;

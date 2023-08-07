@@ -1,6 +1,7 @@
 package repl
 
 import (
+	"fmt"
 	"log"
 	"main/compiler"
 	"main/value"
@@ -253,7 +254,7 @@ func (v *ReplVisitor) VisitLiteralExp(ctx *compiler.LiteralExpContext) interface
 }
 
 func (v *ReplVisitor) VisitIdExp(ctx *compiler.IdExpContext) interface{} {
-	varName := ctx.ID().GetText()
+	varName := ctx.Id_pattern().GetText()
 
 	// TODO: check if variable exists
 	variable := v.ScopeTrace.GetVariable(varName)
@@ -485,7 +486,7 @@ func (v *ReplVisitor) VisitInnerWhile(ctx *compiler.WhileStmtContext, condition 
 
 	// ? use binary strat
 	if condition.Type() != value.IVOR_BOOL {
-		log.Fatal("Condition must be a boolean")
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "La condicion del ciclo debe ser un booleano")
 		return
 	}
 
@@ -523,7 +524,8 @@ func (v *ReplVisitor) VisitInnerWhile(ctx *compiler.WhileStmtContext, condition 
 		condition = v.Visit(ctx.Expr()).(value.IVOR)
 
 		if condition.Type() != value.IVOR_BOOL {
-			log.Fatal("Condition must be a boolean")
+			v.ErrorTable.NewSemanticError(ctx.GetStart(), "La condicion del ciclo debe ser un booleano")
+			return
 		}
 
 		// reset scope
@@ -551,6 +553,7 @@ func (v *ReplVisitor) VisitGuardStmt(ctx *compiler.GuardStmtContext) interface{}
 	condition := v.Visit(ctx.Expr()).(value.IVOR)
 
 	if condition.Type() != value.IVOR_BOOL {
+		fmt.Println(condition)
 		log.Fatal("Condition must be a boolean")
 	}
 

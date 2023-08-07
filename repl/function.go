@@ -35,14 +35,14 @@ func (f *Function) Exec(visitor *ReplVisitor, args []*Argument, token antlr.Toke
 	argsOk, argsMap := f.ValidateArgs(context, args, token)
 
 	if !argsOk {
-		f.ValidateReturn(context, value.DefaultNilValue)
+		f.ValidateReturn(context, value.DefaultNilValue, token)
 		return
 	}
 
 	// create new scope
-	initialScope := context.ScopeTrace.CurrentScope   // save current scope, scope at call time
-	context.ScopeTrace.CurrentScope = f.DeclScope     // set function declaration scope as current scope
-	context.ScopeTrace.PushScope("function" + f.Name) // push function scope
+	initialScope := context.ScopeTrace.CurrentScope          // save current scope, scope at call time
+	context.ScopeTrace.CurrentScope = f.DeclScope            // set function declaration scope as current scope
+	context.ScopeTrace.PushScope("func: " + token.GetText()) // push function scope
 
 	// push args to scope
 
@@ -74,12 +74,11 @@ func (f *Function) Exec(visitor *ReplVisitor, args []*Argument, token antlr.Toke
 			}
 
 			// validate return type
-			f.ValidateReturn(context, item.ReturnValue) // return value from return statement
+			f.ValidateReturn(context, item.ReturnValue, token) // return value from return statement
 			return
 		}
 
-		f.ValidateReturn(context, value.DefaultNilValue)
-		return
+		f.ValidateReturn(context, value.DefaultNilValue, token)
 	}()
 
 	// evaluate body
@@ -87,7 +86,7 @@ func (f *Function) Exec(visitor *ReplVisitor, args []*Argument, token antlr.Toke
 		visitor.Visit(stmt)
 	}
 
-	f.ValidateReturn(context, value.DefaultNilValue)
+	f.ValidateReturn(context, value.DefaultNilValue, token)
 	return
 }
 
@@ -148,10 +147,10 @@ func (f *Function) ValidateArgs(context *ReplContext, args []*Argument, token an
 	return true, finalArgsMap
 }
 
-func (f *Function) ValidateReturn(context *ReplContext, val value.IVOR) {
+func (f *Function) ValidateReturn(context *ReplContext, val value.IVOR, token antlr.Token) {
 
 	if val.Type() != f.ReturnType {
-		context.ErrorTable.NewSemanticError(nil, fmt.Sprintf("Tipo de retorno invalido, se esperaba %s, se obtuvo %s", f.ReturnType, val.Type()))
+		context.ErrorTable.NewSemanticError(token, fmt.Sprintf("Tipo de retorno invalido, se esperaba %s, se obtuvo %s", f.ReturnType, val.Type()))
 
 		f.ReturnValue = value.DefaultNilValue
 	}

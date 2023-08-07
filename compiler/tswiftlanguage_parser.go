@@ -99,8 +99,8 @@ func tswiftlanguageParserInit() {
 		26, 1, 26, 3, 26, 344, 8, 26, 1, 26, 1, 26, 1, 26, 0, 1, 18, 27, 0, 2,
 		4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40,
 		42, 44, 46, 48, 50, 52, 0, 9, 1, 1, 4, 4, 1, 0, 5, 6, 1, 0, 22, 25, 1,
-		0, 39, 40, 2, 0, 34, 34, 49, 49, 1, 0, 33, 34, 1, 0, 35, 36, 1, 0, 41,
-		42, 1, 0, 43, 46, 374, 0, 57, 1, 0, 0, 0, 2, 63, 1, 0, 0, 0, 4, 83, 1,
+		0, 39, 40, 2, 0, 34, 34, 49, 49, 1, 0, 35, 37, 1, 0, 33, 34, 1, 0, 43,
+		46, 1, 0, 41, 42, 374, 0, 57, 1, 0, 0, 0, 2, 63, 1, 0, 0, 0, 4, 83, 1,
 		0, 0, 0, 6, 103, 1, 0, 0, 0, 8, 105, 1, 0, 0, 0, 10, 107, 1, 0, 0, 0, 12,
 		117, 1, 0, 0, 0, 14, 119, 1, 0, 0, 0, 16, 132, 1, 0, 0, 0, 18, 144, 1,
 		0, 0, 0, 20, 169, 1, 0, 0, 0, 22, 180, 1, 0, 0, 0, 24, 191, 1, 0, 0, 0,
@@ -137,17 +137,17 @@ func tswiftlanguageParserInit() {
 		5, 28, 0, 0, 129, 133, 5, 29, 0, 0, 130, 133, 5, 30, 0, 0, 131, 133, 5,
 		31, 0, 0, 132, 127, 1, 0, 0, 0, 132, 128, 1, 0, 0, 0, 132, 129, 1, 0, 0,
 		0, 132, 130, 1, 0, 0, 0, 132, 131, 1, 0, 0, 0, 133, 17, 1, 0, 0, 0, 134,
-		135, 6, 9, -1, 0, 135, 136, 7, 4, 0, 0, 136, 145, 3, 18, 9, 5, 137, 138,
-		5, 50, 0, 0, 138, 139, 3, 18, 9, 0, 139, 140, 5, 51, 0, 0, 140, 145, 1,
-		0, 0, 0, 141, 145, 5, 32, 0, 0, 142, 145, 3, 16, 8, 0, 143, 145, 3, 42,
-		21, 0, 144, 134, 1, 0, 0, 0, 144, 137, 1, 0, 0, 0, 144, 141, 1, 0, 0, 0,
-		144, 142, 1, 0, 0, 0, 144, 143, 1, 0, 0, 0, 145, 166, 1, 0, 0, 0, 146,
-		147, 10, 11, 0, 0, 147, 148, 7, 5, 0, 0, 148, 165, 3, 18, 9, 12, 149, 150,
-		10, 10, 0, 0, 150, 151, 7, 6, 0, 0, 151, 165, 3, 18, 9, 11, 152, 153, 10,
-		9, 0, 0, 153, 154, 7, 7, 0, 0, 154, 165, 3, 18, 9, 10, 155, 156, 10, 8,
-		0, 0, 156, 157, 7, 8, 0, 0, 157, 165, 3, 18, 9, 9, 158, 159, 10, 7, 0,
-		0, 159, 160, 5, 47, 0, 0, 160, 165, 3, 18, 9, 8, 161, 162, 10, 6, 0, 0,
-		162, 163, 5, 48, 0, 0, 163, 165, 3, 18, 9, 7, 164, 146, 1, 0, 0, 0, 164,
+		135, 6, 9, -1, 0, 135, 136, 5, 50, 0, 0, 136, 137, 3, 18, 9, 0, 137, 138,
+		5, 51, 0, 0, 138, 145, 1, 0, 0, 0, 139, 145, 3, 42, 21, 0, 140, 145, 3,
+		14, 7, 0, 141, 145, 3, 16, 8, 0, 142, 143, 7, 4, 0, 0, 143, 145, 3, 18,
+		9, 7, 144, 134, 1, 0, 0, 0, 144, 139, 1, 0, 0, 0, 144, 140, 1, 0, 0, 0,
+		144, 141, 1, 0, 0, 0, 144, 142, 1, 0, 0, 0, 145, 166, 1, 0, 0, 0, 146,
+		147, 10, 6, 0, 0, 147, 148, 7, 5, 0, 0, 148, 165, 3, 18, 9, 7, 149, 150,
+		10, 5, 0, 0, 150, 151, 7, 6, 0, 0, 151, 165, 3, 18, 9, 6, 152, 153, 10,
+		4, 0, 0, 153, 154, 7, 7, 0, 0, 154, 165, 3, 18, 9, 5, 155, 156, 10, 3,
+		0, 0, 156, 157, 7, 8, 0, 0, 157, 165, 3, 18, 9, 4, 158, 159, 10, 2, 0,
+		0, 159, 160, 5, 47, 0, 0, 160, 165, 3, 18, 9, 3, 161, 162, 10, 1, 0, 0,
+		162, 163, 5, 48, 0, 0, 163, 165, 3, 18, 9, 2, 164, 146, 1, 0, 0, 0, 164,
 		149, 1, 0, 0, 0, 164, 152, 1, 0, 0, 0, 164, 155, 1, 0, 0, 0, 164, 158,
 		1, 0, 0, 0, 164, 161, 1, 0, 0, 0, 165, 168, 1, 0, 0, 0, 166, 164, 1, 0,
 		0, 0, 166, 167, 1, 0, 0, 0, 167, 19, 1, 0, 0, 0, 168, 166, 1, 0, 0, 0,
@@ -1985,7 +1985,7 @@ func (s *IdPatternContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
 func (p *TSwiftLanguage) Id_pattern() (localctx IId_patternContext) {
 	localctx = NewId_patternContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 14, TSwiftLanguageRULE_id_pattern)
-	var _la int
+	var _alt int
 
 	localctx = NewIdPatternContext(p, localctx)
 	p.EnterOuterAlt(localctx, 1)
@@ -2002,32 +2002,39 @@ func (p *TSwiftLanguage) Id_pattern() (localctx IId_patternContext) {
 	if p.HasError() {
 		goto errorExit
 	}
-	_la = p.GetTokenStream().LA(1)
-
-	for _la == TSwiftLanguageDOT {
-		{
-			p.SetState(120)
-			p.Match(TSwiftLanguageDOT)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
+	_alt = p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 5, p.GetParserRuleContext())
+	if p.HasError() {
+		goto errorExit
+	}
+	for _alt != 2 && _alt != antlr.ATNInvalidAltNumber {
+		if _alt == 1 {
+			{
+				p.SetState(120)
+				p.Match(TSwiftLanguageDOT)
+				if p.HasError() {
+					// Recognition error - abort rule
+					goto errorExit
+				}
 			}
-		}
-		{
-			p.SetState(121)
-			p.Match(TSwiftLanguageID)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
+			{
+				p.SetState(121)
+				p.Match(TSwiftLanguageID)
+				if p.HasError() {
+					// Recognition error - abort rule
+					goto errorExit
+				}
 			}
-		}
 
+		}
 		p.SetState(126)
 		p.GetErrorHandler().Sync(p)
 		if p.HasError() {
 			goto errorExit
 		}
-		_la = p.GetTokenStream().LA(1)
+		_alt = p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 5, p.GetParserRuleContext())
+		if p.HasError() {
+			goto errorExit
+		}
 	}
 
 errorExit:
@@ -2461,8 +2468,20 @@ func (s *IdExpContext) GetRuleContext() antlr.RuleContext {
 	return s
 }
 
-func (s *IdExpContext) ID() antlr.TerminalNode {
-	return s.GetToken(TSwiftLanguageID, 0)
+func (s *IdExpContext) Id_pattern() IId_patternContext {
+	var t antlr.RuleContext
+	for _, ctx := range s.GetChildren() {
+		if _, ok := ctx.(IId_patternContext); ok {
+			t = ctx.(antlr.RuleContext)
+			break
+		}
+	}
+
+	if t == nil {
+		return nil
+	}
+
+	return t.(IId_patternContext)
 }
 
 func (s *IdExpContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
@@ -2702,14 +2721,6 @@ func (s *BinaryExpContext) Expr(i int) IExprContext {
 	return t.(IExprContext)
 }
 
-func (s *BinaryExpContext) PLUS() antlr.TerminalNode {
-	return s.GetToken(TSwiftLanguagePLUS, 0)
-}
-
-func (s *BinaryExpContext) MINUS() antlr.TerminalNode {
-	return s.GetToken(TSwiftLanguageMINUS, 0)
-}
-
 func (s *BinaryExpContext) MULT() antlr.TerminalNode {
 	return s.GetToken(TSwiftLanguageMULT, 0)
 }
@@ -2718,12 +2729,16 @@ func (s *BinaryExpContext) DIV() antlr.TerminalNode {
 	return s.GetToken(TSwiftLanguageDIV, 0)
 }
 
-func (s *BinaryExpContext) EQUALS_EQUALS() antlr.TerminalNode {
-	return s.GetToken(TSwiftLanguageEQUALS_EQUALS, 0)
+func (s *BinaryExpContext) MOD() antlr.TerminalNode {
+	return s.GetToken(TSwiftLanguageMOD, 0)
 }
 
-func (s *BinaryExpContext) NOT_EQUALS() antlr.TerminalNode {
-	return s.GetToken(TSwiftLanguageNOT_EQUALS, 0)
+func (s *BinaryExpContext) PLUS() antlr.TerminalNode {
+	return s.GetToken(TSwiftLanguagePLUS, 0)
+}
+
+func (s *BinaryExpContext) MINUS() antlr.TerminalNode {
+	return s.GetToken(TSwiftLanguageMINUS, 0)
 }
 
 func (s *BinaryExpContext) LESS_THAN() antlr.TerminalNode {
@@ -2740,6 +2755,14 @@ func (s *BinaryExpContext) GREATER_THAN() antlr.TerminalNode {
 
 func (s *BinaryExpContext) GREATER_THAN_OR_EQUAL() antlr.TerminalNode {
 	return s.GetToken(TSwiftLanguageGREATER_THAN_OR_EQUAL, 0)
+}
+
+func (s *BinaryExpContext) EQUALS_EQUALS() antlr.TerminalNode {
+	return s.GetToken(TSwiftLanguageEQUALS_EQUALS, 0)
+}
+
+func (s *BinaryExpContext) NOT_EQUALS() antlr.TerminalNode {
+	return s.GetToken(TSwiftLanguageNOT_EQUALS, 0)
 }
 
 func (s *BinaryExpContext) AND() antlr.TerminalNode {
@@ -2786,12 +2809,64 @@ func (p *TSwiftLanguage) expr(_p int) (localctx IExprContext) {
 
 	switch p.GetInterpreter().AdaptivePredict(p.BaseParser, p.GetTokenStream(), 7, p.GetParserRuleContext()) {
 	case 1:
-		localctx = NewUnaryExpContext(p, localctx)
+		localctx = NewParenExpContext(p, localctx)
 		p.SetParserRuleContext(localctx)
 		_prevctx = localctx
 
 		{
 			p.SetState(135)
+			p.Match(TSwiftLanguageLPAREN)
+			if p.HasError() {
+				// Recognition error - abort rule
+				goto errorExit
+			}
+		}
+		{
+			p.SetState(136)
+			p.expr(0)
+		}
+		{
+			p.SetState(137)
+			p.Match(TSwiftLanguageRPAREN)
+			if p.HasError() {
+				// Recognition error - abort rule
+				goto errorExit
+			}
+		}
+
+	case 2:
+		localctx = NewFuncCallExpContext(p, localctx)
+		p.SetParserRuleContext(localctx)
+		_prevctx = localctx
+		{
+			p.SetState(139)
+			p.Func_call()
+		}
+
+	case 3:
+		localctx = NewIdExpContext(p, localctx)
+		p.SetParserRuleContext(localctx)
+		_prevctx = localctx
+		{
+			p.SetState(140)
+			p.Id_pattern()
+		}
+
+	case 4:
+		localctx = NewLiteralExpContext(p, localctx)
+		p.SetParserRuleContext(localctx)
+		_prevctx = localctx
+		{
+			p.SetState(141)
+			p.Literal()
+		}
+
+	case 5:
+		localctx = NewUnaryExpContext(p, localctx)
+		p.SetParserRuleContext(localctx)
+		_prevctx = localctx
+		{
+			p.SetState(142)
 
 			var _lt = p.GetTokenStream().LT(1)
 
@@ -2809,64 +2884,8 @@ func (p *TSwiftLanguage) expr(_p int) (localctx IExprContext) {
 			}
 		}
 		{
-			p.SetState(136)
-			p.expr(5)
-		}
-
-	case 2:
-		localctx = NewParenExpContext(p, localctx)
-		p.SetParserRuleContext(localctx)
-		_prevctx = localctx
-		{
-			p.SetState(137)
-			p.Match(TSwiftLanguageLPAREN)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-		{
-			p.SetState(138)
-			p.expr(0)
-		}
-		{
-			p.SetState(139)
-			p.Match(TSwiftLanguageRPAREN)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-
-	case 3:
-		localctx = NewIdExpContext(p, localctx)
-		p.SetParserRuleContext(localctx)
-		_prevctx = localctx
-		{
-			p.SetState(141)
-			p.Match(TSwiftLanguageID)
-			if p.HasError() {
-				// Recognition error - abort rule
-				goto errorExit
-			}
-		}
-
-	case 4:
-		localctx = NewLiteralExpContext(p, localctx)
-		p.SetParserRuleContext(localctx)
-		_prevctx = localctx
-		{
-			p.SetState(142)
-			p.Literal()
-		}
-
-	case 5:
-		localctx = NewFuncCallExpContext(p, localctx)
-		p.SetParserRuleContext(localctx)
-		_prevctx = localctx
-		{
 			p.SetState(143)
-			p.Func_call()
+			p.expr(7)
 		}
 
 	case antlr.ATNInvalidAltNumber:
@@ -2902,12 +2921,49 @@ func (p *TSwiftLanguage) expr(_p int) (localctx IExprContext) {
 				p.PushNewRecursionContext(localctx, _startState, TSwiftLanguageRULE_expr)
 				p.SetState(146)
 
-				if !(p.Precpred(p.GetParserRuleContext(), 11)) {
-					p.SetError(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 11)", ""))
+				if !(p.Precpred(p.GetParserRuleContext(), 6)) {
+					p.SetError(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 6)", ""))
 					goto errorExit
 				}
 				{
 					p.SetState(147)
+
+					var _lt = p.GetTokenStream().LT(1)
+
+					localctx.(*BinaryExpContext).op = _lt
+
+					_la = p.GetTokenStream().LA(1)
+
+					if !((int64(_la) & ^0x3f) == 0 && ((int64(1)<<_la)&240518168576) != 0) {
+						var _ri = p.GetErrorHandler().RecoverInline(p)
+
+						localctx.(*BinaryExpContext).op = _ri
+					} else {
+						p.GetErrorHandler().ReportMatch(p)
+						p.Consume()
+					}
+				}
+				{
+					p.SetState(148)
+
+					var _x = p.expr(7)
+
+					localctx.(*BinaryExpContext).right = _x
+				}
+
+			case 2:
+				localctx = NewBinaryExpContext(p, NewExprContext(p, _parentctx, _parentState))
+				localctx.(*BinaryExpContext).left = _prevctx
+
+				p.PushNewRecursionContext(localctx, _startState, TSwiftLanguageRULE_expr)
+				p.SetState(149)
+
+				if !(p.Precpred(p.GetParserRuleContext(), 5)) {
+					p.SetError(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 5)", ""))
+					goto errorExit
+				}
+				{
+					p.SetState(150)
 
 					var _lt = p.GetTokenStream().LT(1)
 
@@ -2925,46 +2981,9 @@ func (p *TSwiftLanguage) expr(_p int) (localctx IExprContext) {
 					}
 				}
 				{
-					p.SetState(148)
-
-					var _x = p.expr(12)
-
-					localctx.(*BinaryExpContext).right = _x
-				}
-
-			case 2:
-				localctx = NewBinaryExpContext(p, NewExprContext(p, _parentctx, _parentState))
-				localctx.(*BinaryExpContext).left = _prevctx
-
-				p.PushNewRecursionContext(localctx, _startState, TSwiftLanguageRULE_expr)
-				p.SetState(149)
-
-				if !(p.Precpred(p.GetParserRuleContext(), 10)) {
-					p.SetError(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 10)", ""))
-					goto errorExit
-				}
-				{
-					p.SetState(150)
-
-					var _lt = p.GetTokenStream().LT(1)
-
-					localctx.(*BinaryExpContext).op = _lt
-
-					_la = p.GetTokenStream().LA(1)
-
-					if !(_la == TSwiftLanguageMULT || _la == TSwiftLanguageDIV) {
-						var _ri = p.GetErrorHandler().RecoverInline(p)
-
-						localctx.(*BinaryExpContext).op = _ri
-					} else {
-						p.GetErrorHandler().ReportMatch(p)
-						p.Consume()
-					}
-				}
-				{
 					p.SetState(151)
 
-					var _x = p.expr(11)
+					var _x = p.expr(6)
 
 					localctx.(*BinaryExpContext).right = _x
 				}
@@ -2976,49 +2995,12 @@ func (p *TSwiftLanguage) expr(_p int) (localctx IExprContext) {
 				p.PushNewRecursionContext(localctx, _startState, TSwiftLanguageRULE_expr)
 				p.SetState(152)
 
-				if !(p.Precpred(p.GetParserRuleContext(), 9)) {
-					p.SetError(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 9)", ""))
+				if !(p.Precpred(p.GetParserRuleContext(), 4)) {
+					p.SetError(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 4)", ""))
 					goto errorExit
 				}
 				{
 					p.SetState(153)
-
-					var _lt = p.GetTokenStream().LT(1)
-
-					localctx.(*BinaryExpContext).op = _lt
-
-					_la = p.GetTokenStream().LA(1)
-
-					if !(_la == TSwiftLanguageEQUALS_EQUALS || _la == TSwiftLanguageNOT_EQUALS) {
-						var _ri = p.GetErrorHandler().RecoverInline(p)
-
-						localctx.(*BinaryExpContext).op = _ri
-					} else {
-						p.GetErrorHandler().ReportMatch(p)
-						p.Consume()
-					}
-				}
-				{
-					p.SetState(154)
-
-					var _x = p.expr(10)
-
-					localctx.(*BinaryExpContext).right = _x
-				}
-
-			case 4:
-				localctx = NewBinaryExpContext(p, NewExprContext(p, _parentctx, _parentState))
-				localctx.(*BinaryExpContext).left = _prevctx
-
-				p.PushNewRecursionContext(localctx, _startState, TSwiftLanguageRULE_expr)
-				p.SetState(155)
-
-				if !(p.Precpred(p.GetParserRuleContext(), 8)) {
-					p.SetError(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 8)", ""))
-					goto errorExit
-				}
-				{
-					p.SetState(156)
 
 					var _lt = p.GetTokenStream().LT(1)
 
@@ -3036,9 +3018,46 @@ func (p *TSwiftLanguage) expr(_p int) (localctx IExprContext) {
 					}
 				}
 				{
+					p.SetState(154)
+
+					var _x = p.expr(5)
+
+					localctx.(*BinaryExpContext).right = _x
+				}
+
+			case 4:
+				localctx = NewBinaryExpContext(p, NewExprContext(p, _parentctx, _parentState))
+				localctx.(*BinaryExpContext).left = _prevctx
+
+				p.PushNewRecursionContext(localctx, _startState, TSwiftLanguageRULE_expr)
+				p.SetState(155)
+
+				if !(p.Precpred(p.GetParserRuleContext(), 3)) {
+					p.SetError(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 3)", ""))
+					goto errorExit
+				}
+				{
+					p.SetState(156)
+
+					var _lt = p.GetTokenStream().LT(1)
+
+					localctx.(*BinaryExpContext).op = _lt
+
+					_la = p.GetTokenStream().LA(1)
+
+					if !(_la == TSwiftLanguageEQUALS_EQUALS || _la == TSwiftLanguageNOT_EQUALS) {
+						var _ri = p.GetErrorHandler().RecoverInline(p)
+
+						localctx.(*BinaryExpContext).op = _ri
+					} else {
+						p.GetErrorHandler().ReportMatch(p)
+						p.Consume()
+					}
+				}
+				{
 					p.SetState(157)
 
-					var _x = p.expr(9)
+					var _x = p.expr(4)
 
 					localctx.(*BinaryExpContext).right = _x
 				}
@@ -3050,8 +3069,8 @@ func (p *TSwiftLanguage) expr(_p int) (localctx IExprContext) {
 				p.PushNewRecursionContext(localctx, _startState, TSwiftLanguageRULE_expr)
 				p.SetState(158)
 
-				if !(p.Precpred(p.GetParserRuleContext(), 7)) {
-					p.SetError(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 7)", ""))
+				if !(p.Precpred(p.GetParserRuleContext(), 2)) {
+					p.SetError(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 2)", ""))
 					goto errorExit
 				}
 				{
@@ -3068,7 +3087,7 @@ func (p *TSwiftLanguage) expr(_p int) (localctx IExprContext) {
 				{
 					p.SetState(160)
 
-					var _x = p.expr(8)
+					var _x = p.expr(3)
 
 					localctx.(*BinaryExpContext).right = _x
 				}
@@ -3080,8 +3099,8 @@ func (p *TSwiftLanguage) expr(_p int) (localctx IExprContext) {
 				p.PushNewRecursionContext(localctx, _startState, TSwiftLanguageRULE_expr)
 				p.SetState(161)
 
-				if !(p.Precpred(p.GetParserRuleContext(), 6)) {
-					p.SetError(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 6)", ""))
+				if !(p.Precpred(p.GetParserRuleContext(), 1)) {
+					p.SetError(antlr.NewFailedPredicateException(p, "p.Precpred(p.GetParserRuleContext(), 1)", ""))
 					goto errorExit
 				}
 				{
@@ -3098,7 +3117,7 @@ func (p *TSwiftLanguage) expr(_p int) (localctx IExprContext) {
 				{
 					p.SetState(163)
 
-					var _x = p.expr(7)
+					var _x = p.expr(2)
 
 					localctx.(*BinaryExpContext).right = _x
 				}
@@ -6815,22 +6834,22 @@ func (p *TSwiftLanguage) Sempred(localctx antlr.RuleContext, ruleIndex, predInde
 func (p *TSwiftLanguage) Expr_Sempred(localctx antlr.RuleContext, predIndex int) bool {
 	switch predIndex {
 	case 0:
-		return p.Precpred(p.GetParserRuleContext(), 11)
+		return p.Precpred(p.GetParserRuleContext(), 6)
 
 	case 1:
-		return p.Precpred(p.GetParserRuleContext(), 10)
+		return p.Precpred(p.GetParserRuleContext(), 5)
 
 	case 2:
-		return p.Precpred(p.GetParserRuleContext(), 9)
+		return p.Precpred(p.GetParserRuleContext(), 4)
 
 	case 3:
-		return p.Precpred(p.GetParserRuleContext(), 8)
+		return p.Precpred(p.GetParserRuleContext(), 3)
 
 	case 4:
-		return p.Precpred(p.GetParserRuleContext(), 7)
+		return p.Precpred(p.GetParserRuleContext(), 2)
 
 	case 5:
-		return p.Precpred(p.GetParserRuleContext(), 6)
+		return p.Precpred(p.GetParserRuleContext(), 1)
 
 	default:
 		panic("No predicate with index: " + fmt.Sprint(predIndex))
