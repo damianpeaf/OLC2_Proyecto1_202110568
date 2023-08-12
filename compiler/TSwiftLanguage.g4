@@ -7,7 +7,7 @@ options {
 
 program: (stmt)* EOF?;
 
-delimiter: SEMICOLON | EOF;
+delimiter: SEMICOLON? | EOF;
 
 stmt:
 	decl_stmt delimiter
@@ -22,17 +22,24 @@ stmt:
 	| func_dcl;
 
 decl_stmt:
-	var_type ID COLON primitive_type EQUALS expr		# TypeValueDecl
-	| var_type ID EQUALS expr							# ValueDecl
-	| var_type ID COLON primitive_type INTERROGATION	# TypeDecl;
+	var_type ID COLON primitive_type EQUALS expr						# TypeValueDecl
+	| var_type ID EQUALS expr											# ValueDecl
+	| var_type ID COLON primitive_type INTERROGATION					# TypeDecl
+	| var_type ID COLON LBRACK primitive_type RBRACK EQUALS vector_expr	# VectorDecl;
+
+vector_expr:
+	LBRACK expr (COMMA expr)* RBRACK	# VectorItemList
+	| id_pattern						# VectoReferece;
 
 var_type: VAR_KW | LET_KW;
 
+// TODO: generic type
 primitive_type:
 	INTEGER_TYPE
 	| FLOAT_TYPE
 	| STRING_TYPE
-	| BOOL_TYPE;
+	| BOOL_TYPE
+	| CHARACTER_TYPE;
 
 assign_stmt:
 	id_pattern EQUALS expr								# DirectAssign

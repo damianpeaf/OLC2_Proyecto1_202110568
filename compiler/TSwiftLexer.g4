@@ -3,7 +3,7 @@ lexer grammar TSwiftLexer;
 // Skip tokens
 
 WS: [ \t\r\n]+ -> skip;
-COMMENT: '//' .*? '\n' -> skip;
+COMMENT: '//' .*? ('\n' | EOF) -> skip;
 MULTILINE_COMMENT: '/*' .*? '*/' -> skip;
 
 // Stmts delimiter

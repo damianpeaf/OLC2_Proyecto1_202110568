@@ -13,6 +13,15 @@ export const initialDocument: DocumentFile = {
     content: ''
 }
 
+export interface TSwiftError {
+
+    Column: number;
+    Line: number;
+    Msg: string;
+    Type: string;
+
+}
+
 export interface TSwiftState {
     isConsoleOpen: boolean;
     documents: DocumentFile[];
@@ -21,8 +30,7 @@ export interface TSwiftState {
     terminalContent: string;
     isAstModalOpen: boolean;
     graphviz: string | null;
-    // TODO: implement error type
-    errors: any[];
+    errors: TSwiftError[];
     symbolTable: string;
     isSymbolTableModalOpen: boolean;
 }

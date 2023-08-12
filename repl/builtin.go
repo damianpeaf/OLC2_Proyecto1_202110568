@@ -41,6 +41,8 @@ func Print(context *ReplContext, args []*Argument) (value.IVOR, bool, string) {
 			output += strconv.FormatFloat(arg.Object.Value().(float64), 'f', 4, 64) // 4 digits of precision
 		case value.IVOR_STRING:
 			output += arg.Object.Value().(string)
+		case value.IVOR_CHARACTER:
+			output += arg.Object.Value().(string)
 		case value.IVOR_NIL:
 			output += "nil"
 		}

@@ -1,10 +1,10 @@
 import { useContext } from "react"
-import { DocumentFile, TSwiftContext } from "../context"
+import { DocumentFile, TSwiftContext, TSwiftError } from "../context"
 import { fireDangerToast, fireScucessToast } from "../components/toasts"
 
 export type ApiResponse = {
     output: string
-    errors: any[] | null
+    errors: TSwiftError[] | null
 }
 
 export const useTSwift = () => {
@@ -85,10 +85,10 @@ export const useTSwift = () => {
         setTerminalContent(output)
 
         // * Set errors
-        // dispatch({ type: 'set-errors', payload: { errors: runtime.ast.context.errorTable.errors } })
 
         // * Fire toast
         if (errors) {
+            dispatch({ type: 'set-errors', payload: { errors } })
             fireDangerToast('Programa ejecutado con errores')
         } else {
             fireScucessToast('Programa ejecutado con éxito')

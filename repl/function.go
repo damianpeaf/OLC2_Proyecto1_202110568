@@ -47,7 +47,7 @@ func (f *Function) Exec(visitor *ReplVisitor, args []*Argument, token antlr.Toke
 	// push args to scope
 
 	for varName, arg := range argsMap {
-		context.ScopeTrace.CurrentScope.AddVariable(varName, arg.Object.Type(), arg.Object, false)
+		context.ScopeTrace.CurrentScope.AddVariable(varName, arg.Object.Type(), arg.Object, false, false, arg.Token)
 	}
 
 	// push return item to callstack
@@ -87,7 +87,7 @@ func (f *Function) Exec(visitor *ReplVisitor, args []*Argument, token antlr.Toke
 	}
 
 	f.ValidateReturn(context, value.DefaultNilValue, token)
-	return
+	// return
 }
 
 func (f *Function) ValidateArgs(context *ReplContext, args []*Argument, token antlr.Token) (bool, map[string]*Argument) {

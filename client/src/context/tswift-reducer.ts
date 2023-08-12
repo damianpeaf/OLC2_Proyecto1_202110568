@@ -1,5 +1,6 @@
 import {
     DocumentFile,
+    TSwiftError,
     TSwiftState,
     initialDocument
 } from '.';
@@ -68,7 +69,7 @@ export type TSwiftActionType =
         type: 'set-errors',
         payload: {
             // TODO: implement error type
-            errors: Error[]
+            errors: TSwiftError[]
         }
     } | {
         type: 'set-symbol-table',

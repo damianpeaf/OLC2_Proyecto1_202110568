@@ -1,7 +1,7 @@
+import { TSwiftError } from "../../context"
 
 type ErrorTableProps = {
-    // TODO: implement error type
-    errors: any[]
+    errors: TSwiftError[]
 }
 
 export const ErrorTable = ({ errors }: ErrorTableProps) => {
@@ -38,16 +38,16 @@ export const ErrorTable = ({ errors }: ErrorTableProps) => {
                                     {index + 1}
                                 </td>
                                 <td className="px-6 py-4">
-                                    {error.type}
+                                    {error.Type}
                                 </td>
                                 <td className="px-6 py-4">
-                                    {error.message}
+                                    {error.Msg}
                                 </td>
                                 <td className="px-6 py-4">
-                                    {error.line}
+                                    {error.Line}
                                 </td>
                                 <td className="px-6 py-4">
-                                    {error.column}
+                                    {error.Column}
                                 </td>
                             </tr>
                         ))

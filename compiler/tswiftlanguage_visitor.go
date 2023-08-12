@@ -25,6 +25,15 @@ type TSwiftLanguageVisitor interface {
 	// Visit a parse tree produced by TSwiftLanguage#TypeDecl.
 	VisitTypeDecl(ctx *TypeDeclContext) interface{}
 
+	// Visit a parse tree produced by TSwiftLanguage#VectorDecl.
+	VisitVectorDecl(ctx *VectorDeclContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#VectorItemList.
+	VisitVectorItemList(ctx *VectorItemListContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#VectoReferece.
+	VisitVectoReferece(ctx *VectoRefereceContext) interface{}
+
 	// Visit a parse tree produced by TSwiftLanguage#var_type.
 	VisitVar_type(ctx *Var_typeContext) interface{}
 

@@ -3,6 +3,8 @@ package repl
 import (
 	"fmt"
 	"main/value"
+
+	"github.com/antlr4-go/antlr/v4"
 )
 
 type BaseScope struct {
@@ -30,19 +32,63 @@ func (s *BaseScope) AddChild(child *BaseScope) {
 	child.parent = s
 }
 
-func (s *BaseScope) AddVariable(name string, varType string, value value.IVOR, isConst bool) *Variable {
+func (s *BaseScope) variableExists(variable *Variable) bool {
 
-	variable := &Variable{
-		Name:    name,
-		Value:   value,
-		Type:    varType,
-		IsConst: isConst,
+	if _, ok := s.variables[variable.Name]; ok {
+		return true
 	}
 
-	// TODO: check if variable already exists
+	return false
+
+}
+
+func (s *BaseScope) AddVariable(name string, varType string, value value.IVOR, isConst bool, allowNil bool, token antlr.Token) (*Variable, string) {
+
+	variable := &Variable{
+		Name:     name,
+		Value:    value,
+		Type:     varType,
+		IsConst:  isConst,
+		AllowNil: allowNil,
+		Token:    token,
+	}
+
+	if s.variableExists(variable) {
+		return nil, "La variable " + name + " ya existe"
+	}
+
+	typesOk, msg := variable.TypeValidation()
+
+	// even if the variable is not valid, we add it to the scope, (internally it will be nil)
 	s.variables[name] = variable
 
-	return variable
+	if !typesOk {
+		// report error
+		return nil, msg
+	}
+
+	return variable, ""
+}
+
+func (s *BaseScope) AddVector(name string, varType string, auxType string, value value.IVOR, isConst bool, allowNil bool, token antlr.Token) (*Variable, string) {
+
+	variable := &Variable{
+		Name:     name,
+		Value:    value,
+		Type:     varType,
+		IsConst:  isConst,
+		AuxType:  auxType,
+		AllowNil: allowNil,
+		Token:    token,
+	}
+
+	if s.variableExists(variable) {
+		return nil, "La variable " + name + " ya existe"
+	}
+
+	s.variables[name] = variable
+
+	return variable, ""
 }
 
 func (s *BaseScope) GetVariable(name string) *Variable {
@@ -146,8 +192,12 @@ func (s *ScopeTrace) Reset() {
 	s.CurrentScope = s.GlobalScope
 }
 
-func (s *ScopeTrace) AddVariable(name string, varType string, value value.IVOR, isConst bool) *Variable {
-	return s.CurrentScope.AddVariable(name, varType, value, isConst)
+func (s *ScopeTrace) AddVariable(name string, varType string, value value.IVOR, isConst bool, allowNil bool, token antlr.Token) (*Variable, string) {
+	return s.CurrentScope.AddVariable(name, varType, value, isConst, allowNil, token)
+}
+
+func (s *ScopeTrace) AddVector(name string, varType string, auxType string, value value.IVOR, isConst bool, allowNil bool, token antlr.Token) (*Variable, string) {
+	return s.CurrentScope.AddVector(name, varType, auxType, value, isConst, allowNil, token)
 }
 
 func (s *ScopeTrace) GetVariable(name string) *Variable {

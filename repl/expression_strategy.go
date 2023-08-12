@@ -24,6 +24,12 @@ type BinaryStrategy struct {
 
 func (s *BinaryStrategy) Validate(left, right value.IVOR) (bool, string, value.IVOR) {
 
+	// nil in any side is, by default return nil
+
+	if left.Type() == value.IVOR_NIL || right.Type() == value.IVOR_NIL {
+		return false, "No es posible realizar operaciones con valores nulos", value.DefaultNilValue
+	}
+
 	for _, valid := range s.Validations {
 
 		if valid.LeftType == left.Type() && valid.RightType == right.Type() {

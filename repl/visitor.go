@@ -98,16 +98,14 @@ func (v *ReplVisitor) VisitTypeValueDecl(ctx *compiler.TypeValueDeclContext) int
 	varType := ctx.Primitive_type().GetText()
 	varValue := v.Visit(ctx.Expr()).(value.IVOR)
 
-	variable := v.ScopeTrace.AddVariable(varName, varType, varValue, isConst)
+	variable, msg := v.ScopeTrace.AddVariable(varName, varType, varValue, isConst, false, ctx.GetStart())
 
-	ok, msg := variable.Validate()
-
-	// Add variable to scope
-	if !ok {
-		log.Fatal(msg)
+	// Variable already exists
+	if variable == nil {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
 	}
 
-	return v.VisitChildren(ctx)
+	return nil
 }
 
 func (v *ReplVisitor) VisitValueDecl(ctx *compiler.ValueDeclContext) interface{} {
@@ -115,19 +113,16 @@ func (v *ReplVisitor) VisitValueDecl(ctx *compiler.ValueDeclContext) interface{}
 	isConst := isDeclConst(ctx.Var_type().GetText())
 	varName := ctx.ID().GetText()
 	varValue := v.Visit(ctx.Expr()).(value.IVOR)
+	// todo: Change primitive type to a more general type
 	varType := varValue.Type()
 
-	variable := v.ScopeTrace.AddVariable(varName, varType, varValue, isConst)
+	variable, msg := v.ScopeTrace.AddVariable(varName, varType, varValue, isConst, false, ctx.GetStart())
 
-	ok, msg := variable.Validate()
-
-	// Add variable to scope
-	if !ok {
-		log.Fatal(msg)
+	// Variable already exists
+	if variable == nil {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
 	}
-
-	return v.VisitChildren(ctx)
-
+	return nil
 }
 
 func (v *ReplVisitor) VisitTypeDecl(ctx *compiler.TypeDeclContext) interface{} {
@@ -137,16 +132,66 @@ func (v *ReplVisitor) VisitTypeDecl(ctx *compiler.TypeDeclContext) interface{} {
 	// todo: Change primitive type to a more general type
 	varType := ctx.Primitive_type().GetText()
 
-	variable := v.ScopeTrace.AddVariable(varName, varType, value.DefaultNilValue, isConst)
-
-	ok, msg := variable.Validate()
-
-	// Add variable to scope
-	if !ok {
-		log.Fatal(msg)
+	if isConst {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Las constantes Deben tener un valor asignado")
+		return nil
 	}
 
-	return v.VisitChildren(ctx)
+	variable, msg := v.ScopeTrace.AddVariable(varName, varType, value.DefaultNilValue, isConst, true, ctx.GetStart())
+
+	if variable == nil {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
+	}
+
+	return nil
+}
+
+func (v *ReplVisitor) VisitVectorDecl(ctx *compiler.VectorDeclContext) interface{} {
+
+	isConst := isDeclConst(ctx.Var_type().GetText())
+	varName := ctx.ID().GetText()
+	// todo: Change primitive type to a more general type
+	varType := value.IVOR_VECTOR
+	varAuxType := ctx.Primitive_type().GetText()
+
+	varValue := v.Visit(ctx.Vector_expr()).(value.IVOR)
+
+	variable, msg := v.ScopeTrace.AddVector(varName, varType, varAuxType, varValue, isConst, false, ctx.GetStart()) // ? ALLOW NIL
+
+	if variable == nil {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
+	}
+
+	return nil
+}
+
+func (v *ReplVisitor) VisitVectorItemList(ctx *compiler.VectorItemListContext) interface{} {
+
+	var vectorItems []value.IVOR
+
+	for _, item := range ctx.AllExpr() {
+		vectorItems = append(vectorItems, v.Visit(item).(value.IVOR))
+	}
+
+	var itemType = value.IVOR_NIL
+
+	if ctx.Expr(0) != nil {
+		// TODO: Validate that all items are of the same type
+		itemType = vectorItems[0].Type()
+	}
+
+	return &value.VectorValue{
+		InternalValue: vectorItems,
+		CurrentIndex:  0,
+		Builtins:      make(map[string]value.IVOR, 0), // TODO: Add builtins
+		ItemType:      itemType,
+	}
+}
+
+func (v *ReplVisitor) VisitVectoReferece(ctx *compiler.VectoRefereceContext) interface{} {
+	// TODO: Implement, copy the vector
+	fmt.Println("NOT IMPLEMENTED")
+	return nil
 }
 
 func (v *ReplVisitor) VisitDirectAssign(ctx *compiler.DirectAssignContext) interface{} {
@@ -157,13 +202,16 @@ func (v *ReplVisitor) VisitDirectAssign(ctx *compiler.DirectAssignContext) inter
 	variable := v.ScopeTrace.GetVariable(varName)
 
 	if variable == nil {
-		log.Fatal("Variable not found")
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Variable "+varName+" no encontrada")
+	} else {
+		ok, msg := variable.Assign(varValue)
+
+		if !ok {
+			v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
+		}
 	}
 
-	// TODO: asign method
-	variable.Value = varValue
-
-	return v.VisitChildren(ctx)
+	return nil
 
 }
 
@@ -173,28 +221,33 @@ func (v *ReplVisitor) VisitArithmeticAssign(ctx *compiler.ArithmeticAssignContex
 	variable := v.ScopeTrace.GetVariable(varName)
 
 	if variable == nil {
-		log.Fatal("Variable not found")
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Variable "+varName+" no encontrada")
+	} else {
+
+		leftValue := variable.Value
+		rightValue := v.Visit(ctx.Expr()).(value.IVOR)
+
+		op := string(ctx.GetOp().GetText()[0])
+
+		strat, ok := BinaryStrats[op]
+
+		if !ok {
+			log.Fatal("Binary operator not found")
+		}
+
+		ok, msg, varValue := strat.Validate(leftValue, rightValue)
+
+		if !ok {
+			v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
+			return nil
+		}
+
+		ok, msg = variable.Assign(varValue)
+
+		if !ok {
+			v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
+		}
 	}
-
-	leftValue := variable.Value
-	rightValue := v.Visit(ctx.Expr()).(value.IVOR)
-
-	op := string(ctx.GetOp().GetText()[0])
-
-	strat, ok := BinaryStrats[op]
-
-	if !ok {
-		log.Fatal("Binary operator not found")
-	}
-
-	ok, msg, result := strat.Validate(leftValue, rightValue)
-
-	if !ok {
-		log.Fatal(msg)
-	}
-
-	// TODO: asign method
-	variable.Value = result
 
 	return nil
 }
@@ -226,9 +279,18 @@ func (v *ReplVisitor) VisitFloatLiteral(ctx *compiler.FloatLiteralContext) inter
 func (v *ReplVisitor) VisitStringLiteral(ctx *compiler.StringLiteralContext) interface{} {
 
 	// remove quotes
-	// Todo: scape sequences
 	stringVal := ctx.GetText()[1 : len(ctx.GetText())-1]
 
+	// Todo: scape sequences
+
+	// Character literal
+	if len(stringVal) == 1 {
+		return &value.CharacterValue{
+			InternalValue: stringVal,
+		}
+	}
+
+	// String literal
 	return &value.StringValue{
 		InternalValue: stringVal,
 	}
@@ -256,8 +318,12 @@ func (v *ReplVisitor) VisitLiteralExp(ctx *compiler.LiteralExpContext) interface
 func (v *ReplVisitor) VisitIdExp(ctx *compiler.IdExpContext) interface{} {
 	varName := ctx.Id_pattern().GetText()
 
-	// TODO: check if variable exists
 	variable := v.ScopeTrace.GetVariable(varName)
+
+	if variable == nil {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Variable "+varName+" no encontrada")
+		return value.DefaultNilValue
+	}
 
 	// ? pointer
 	return variable.Value
@@ -305,7 +371,8 @@ func (v *ReplVisitor) VisitBinaryExp(ctx *compiler.BinaryExpContext) interface{}
 	ok, msg, result := strat.Validate(left, right)
 
 	if !ok {
-		log.Fatal(msg)
+		v.ErrorTable.NewSemanticError(ctx.GetOp(), msg)
+		return value.DefaultNilValue
 	}
 
 	return result
@@ -336,7 +403,9 @@ func (v *ReplVisitor) VisitIfChain(ctx *compiler.IfChainContext) interface{} {
 	condition := v.Visit(ctx.Expr()).(value.IVOR)
 
 	if condition.Type() != value.IVOR_BOOL {
-		log.Fatal("Condition must be a boolean")
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "La condicion del if debe ser un booleano")
+		return false
+
 	}
 
 	if condition.(*value.BoolValue).InternalValue {
@@ -400,8 +469,12 @@ func (v *ReplVisitor) VisitSwitchStmt(ctx *compiler.SwitchStmtContext) interface
 			if item != switchItem {
 				panic(item)
 			}
+
+			return // break
 		}
 	}()
+
+	visited := false
 
 	// evaluate cases
 	for _, switchCase := range ctx.AllSwitch_case() {
@@ -411,18 +484,19 @@ func (v *ReplVisitor) VisitSwitchStmt(ctx *compiler.SwitchStmtContext) interface
 		// ? use binary strat
 		if caseValue.Type() != mainValue.Type() {
 			// warning
-			log.Fatal("Case value must be same type as switch value")
+			continue
 		}
 
 		if caseValue.Value() == mainValue.Value() {
 			v.Visit(switchCase)
+			visited = true
+			break // implicit break
 		}
 
 	}
 
 	// evaluate default
-	// ! fix: default case must be evaluated after all cases only if no case was evaluated
-	if ctx.Default_case() != nil {
+	if ctx.Default_case() != nil && !visited {
 		v.Visit(ctx.Default_case())
 	}
 
@@ -506,6 +580,7 @@ func (v *ReplVisitor) VisitInnerWhile(ctx *compiler.WhileStmtContext, condition 
 			// Continue
 			if item.IsAction(ContinueItem) {
 				item.ResetAction()                                       // reset action, can be used again
+				condition = v.Visit(ctx.Expr()).(value.IVOR)             // update condition
 				v.VisitInnerWhile(ctx, condition, whileScope, whileItem) // continue
 
 			} else if item.IsAction(BreakItem) {
@@ -535,17 +610,140 @@ func (v *ReplVisitor) VisitInnerWhile(ctx *compiler.WhileStmtContext, condition 
 
 func (v *ReplVisitor) VisitForStmt(ctx *compiler.ForStmtContext) interface{} {
 
-	// Push scope
-	// mainForScope := v.ScopeTrace.PushScope("for")
-	// TODO: implement first 'iterable' values as: strings, vectors and ranges
-	// TODO: handle break and continue statements from call stack
+	varName := ctx.ID().GetText()
+	var iterableItem *value.VectorValue = value.DefaultEmptyVectorValue
+
+	if ctx.Range_() != nil {
+		iterableItem = v.Visit(ctx.Range_()).(*value.VectorValue)
+	}
+
+	if ctx.Expr() != nil {
+		iterableValue := v.Visit(ctx.Expr()).(value.IVOR)
+
+		if iterableValue.Type() == value.IVOR_VECTOR {
+			iterableItem = iterableValue.(*value.VectorValue)
+		} else if iterableValue.Type() == value.IVOR_STRING {
+			iterableItem = iterableValue.(*value.StringValue).ToVector()
+		} else {
+			v.ErrorTable.NewSemanticError(ctx.GetStart(), "El valor del rango debe ser un vector o una cadena")
+			return nil
+		}
+	}
+
+	if iterableItem.Size() == 0 {
+		return nil
+	}
+
+	// Push scope outer scope
+	outerForScope := v.ScopeTrace.PushScope("outer_for")
+
+	// create the associated variable to the iterable
+	iterableVariable, msg := outerForScope.AddVariable(varName, iterableItem.ItemType, iterableItem.Current(), true, false, ctx.ID().GetSymbol())
+
+	if iterableVariable == nil {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
+		log.Fatal("This should not happen")
+		return nil
+	}
+
+	// Push forItem to call stack [breakable, continuable]
+
+	forItem := &CallStackItem{
+		ReturnValue: value.DefaultNilValue,
+		Type: []string{
+			BreakItem,
+			ContinueItem,
+		},
+	}
+
+	v.CallStack.Push(forItem)
+
+	// Push inner for scope
+	innerForScope := v.ScopeTrace.PushScope("inner_for")
+
+	v.VisitInnerFor(ctx, outerForScope, innerForScope, forItem, iterableItem, iterableVariable)
+
+	v.ScopeTrace.PopScope() // pop inner for scope
+	v.ScopeTrace.PopScope() // pop outer for scope
 
 	return nil
 }
 
+func (v *ReplVisitor) VisitInnerFor(ctx *compiler.ForStmtContext, outerForScope *BaseScope, innerForScope *BaseScope, forItem *CallStackItem, iterableItem *value.VectorValue, iterableVariable *Variable) {
+
+	// reset scope
+	innerForScope.Reset()
+
+	// handle break and continue statements from call stack
+	defer func() {
+
+		if item, ok := recover().(*CallStackItem); item != nil && ok {
+
+			// Not a for item, propagate panic
+			if item != forItem {
+				panic(item)
+			}
+
+			// Continue
+			if item.IsAction(ContinueItem) {
+				item.ResetAction()                                                                          // reset action, can be used again
+				iterableItem.Next()                                                                         // next item
+				v.VisitInnerFor(ctx, outerForScope, innerForScope, forItem, iterableItem, iterableVariable) // continue
+			}
+
+			// Break
+			if item.IsAction(BreakItem) {
+				return
+			}
+
+		}
+	}()
+
+	// iterableItem.Size()
+	for iterableItem.CurrentIndex < iterableItem.Size() {
+
+		// update variable value
+		iterableVariable.Value = iterableItem.Current()
+
+		for _, stmt := range ctx.AllStmt() {
+			v.Visit(stmt)
+		}
+
+		iterableItem.Next()
+	}
+}
+
 func (v *ReplVisitor) VisitNumericRange(ctx *compiler.NumericRangeContext) interface{} {
-	// TODO: implement range
-	return v.VisitChildren(ctx)
+
+	leftExpr := v.Visit(ctx.Expr(0)).(value.IVOR)
+	rightExpr := v.Visit(ctx.Expr(1)).(value.IVOR)
+
+	if leftExpr.Type() != value.IVOR_INT || rightExpr.Type() != value.IVOR_INT {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Los valores de los rangos deben ser enteros")
+		return value.DefaultNilValue
+	}
+
+	left := leftExpr.(*value.IntValue).InternalValue
+	right := rightExpr.(*value.IntValue).InternalValue
+
+	if left > right {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "El valor izquierdo del rango debe ser menor o igual al valor derecho")
+	}
+
+	var values []value.IVOR
+
+	for i := left; i <= right; i++ {
+		values = append(values, &value.IntValue{
+			InternalValue: i,
+		})
+	}
+
+	return &value.VectorValue{
+		InternalValue: values,
+		CurrentIndex:  0,
+		Builtins:      make(map[string]value.IVOR, 0), // ? todo: add builtins ?
+		ItemType:      value.IVOR_INT,
+	}
 }
 
 func (v *ReplVisitor) VisitGuardStmt(ctx *compiler.GuardStmtContext) interface{} {
@@ -554,7 +752,7 @@ func (v *ReplVisitor) VisitGuardStmt(ctx *compiler.GuardStmtContext) interface{}
 
 	if condition.Type() != value.IVOR_BOOL {
 		fmt.Println(condition)
-		log.Fatal("Condition must be a boolean")
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "La condicion del guard debe ser un booleano")
 	}
 
 	if !condition.(*value.BoolValue).InternalValue {
@@ -625,7 +823,8 @@ func (v *ReplVisitor) VisitFuncCall(ctx *compiler.FuncCallContext) interface{} {
 	funcObj := v.ScopeTrace.GetFunction(funcName)
 
 	if funcObj == nil {
-		log.Fatal("Function not found")
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Funcion "+funcName+" no encontrada")
+		return value.DefaultNilValue
 	}
 
 	args := make([]*Argument, 0)
@@ -639,7 +838,13 @@ func (v *ReplVisitor) VisitFuncCall(ctx *compiler.FuncCallContext) interface{} {
 		returnValue, ok, msg := funcObj.(*BuiltInFunction).Exec(v.GetReplContext(), args)
 
 		if !ok {
-			log.Fatal(msg)
+
+			if msg != "" {
+				v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
+			}
+
+			return value.DefaultNilValue
+
 		}
 
 		return returnValue
@@ -702,7 +907,13 @@ func (v *ReplVisitor) VisitFuncDecl(ctx *compiler.FuncDeclContext) interface{} {
 	}
 
 	funcName := ctx.ID().GetText()
-	params := v.Visit(ctx.Param_list()).([]*Param)
+
+	params := make([]*Param, 0)
+
+	if ctx.Param_list() != nil {
+		params = v.Visit(ctx.Param_list()).([]*Param)
+	}
+
 	returnType := value.IVOR_NIL
 
 	if ctx.Primitive_type() != nil {

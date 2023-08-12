@@ -60,17 +60,35 @@ export const Console = () => {
                     text-gray-400
                 "
             >
+
+
                 {
-                    errors.length > 0
-                        ? <ErrorTable errors={errors} />
-                        : terminalContent.split('\n').map((line, index) => (
-                            <React.Fragment key={index}>
-                                <pre className='whitespace-pre-wrap'>
-                                    {line.replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
-                                </pre>
-                                {index !== terminalContent.split('\n').length - 1 && <br />}
-                            </React.Fragment>
-                        ))
+                    errors.length > 0 &&
+                    <>
+                        <br />
+                        <h3
+                            className='text-gray-300 font-bold text-xl'
+                        >Errores:</h3>
+                        <br />
+                        <ErrorTable errors={errors} />
+                        <br />
+                        <br />
+                        <h3
+                            className='text-gray-300 font-bold text-xl'
+                        >Salida:</h3>
+                        <br />
+                    </>
+                }
+
+                {
+                    terminalContent.split('\n').map((line, index) => (
+                        <React.Fragment key={index}>
+                            <pre className='whitespace-pre-wrap'>
+                                {line.replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
+                            </pre>
+                            {index !== terminalContent.split('\n').length - 1 && <br />}
+                        </React.Fragment>
+                    ))
                 }
             </article>
         </section>
