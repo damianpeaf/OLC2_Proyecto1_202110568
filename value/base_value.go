@@ -15,6 +15,7 @@ const (
 	IVOR_POINTER          = "pointer"
 )
 
+// IVOR stands for Internal Value Object Representation
 type IVOR interface {
 	Value() interface{}
 	Type() string

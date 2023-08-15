@@ -148,23 +148,6 @@ func (v *ReplVisitor) VisitTypeDecl(ctx *compiler.TypeDeclContext) interface{} {
 	return nil
 }
 
-// func (v *ReplVisitor) VisitVectorDecl(ctx *compiler.VectorDeclContext) interface{} {
-
-// 	isConst := isDeclConst(ctx.Var_type().GetText())
-// 	varName := ctx.ID().GetText()
-// 	varType := v.Visit(ctx.Type_()).(string)
-
-// 	varValue := v.Visit(ctx.Vector_expr()).(value.IVOR)
-
-// 	variable, msg := v.ScopeTrace.AddVariable(varName, varType, varValue, isConst, false, ctx.GetStart()) // ? ALLOW NIL
-
-// 	if variable == nil {
-// 		v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
-// 	}
-
-// 	return nil
-// }
-
 func (v *ReplVisitor) VisitVectorItemList(ctx *compiler.VectorItemListContext) interface{} {
 
 	var vectorItems []value.IVOR

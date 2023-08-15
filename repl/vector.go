@@ -10,6 +10,8 @@ type VectorValue struct {
 	CurrentIndex  int
 	ItemType      string
 	FullType      string
+	SizeValue     *value.IntValue
+	IsEmpty       *value.BoolValue
 }
 
 func (v VectorValue) Value() interface{} {
@@ -66,6 +68,13 @@ func (v *VectorValue) Copy() value.IVOR {
 
 }
 
+func (v *VectorValue) updateProps() {
+
+	v.SizeValue.InternalValue = len(v.InternalValue)
+	v.IsEmpty.InternalValue = len(v.InternalValue) == 0
+
+}
+
 var DefaultVectorInternalScope = &BaseScope{
 	name: "vector",
 }
@@ -76,6 +85,8 @@ func NewVectorValue(vectorItems []value.IVOR, fullType, itemType string) *Vector
 		CurrentIndex:  0,
 		ItemType:      itemType,
 		FullType:      fullType,
+		SizeValue:     &value.IntValue{InternalValue: len(vectorItems)},
+		IsEmpty:       &value.BoolValue{InternalValue: len(vectorItems) == 0},
 	}
 
 	AddVectorBuiltins(vector)

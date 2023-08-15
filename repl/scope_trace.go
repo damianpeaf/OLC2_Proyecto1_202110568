@@ -77,28 +77,11 @@ func (s *BaseScope) AddVariable(name string, varType string, value value.IVOR, i
 	return variable, ""
 }
 
-func (s *BaseScope) AddVector(name string, varType string, value value.IVOR, isConst bool, allowNil bool, token antlr.Token) (*Variable, string) {
-
-	variable := &Variable{
-		Name:     name,
-		Value:    value,
-		Type:     varType,
-		IsConst:  isConst,
-		AllowNil: allowNil,
-		Token:    token,
-	}
-
-	if s.variableExists(variable) {
-		return nil, "La variable " + name + " ya existe"
-	}
-
-	s.variables[name] = variable
-
-	return variable, ""
-}
-
 func (s *BaseScope) GetVariable(name string) *Variable {
-	// Todo: suport for structs properties
+	// verify if is refering to and object/struct function
+	if strings.Contains(name, ".") {
+		return s.searchObjectVariable(name, nil)
+	}
 
 	initialScope := s
 
@@ -123,12 +106,71 @@ func (s *BaseScope) GetVariable(name string) *Variable {
 	return nil
 }
 
+// obj1.obj2.prop1
+
+func (s *BaseScope) searchObjectVariable(name string, lastObj value.IVOR) *Variable {
+
+	// split name by dot
+	parts := strings.Split(name, ".")
+
+	if len(parts) == 0 {
+		log.Fatal("idk what u did, cant split by dot")
+		return nil
+	}
+
+	if len(parts) == 1 {
+		obj, ok := lastObj.(*ObjectValue)
+
+		if ok {
+			return obj.InternalScope.GetVariable(name)
+		}
+
+		log.Fatal("idk what u did, cant convert to object")
+		return nil
+	}
+
+	// then parts should be 2 or more
+
+	if lastObj == nil {
+		variable := s.GetVariable(parts[0])
+
+		if variable == nil {
+			return nil
+		}
+
+		obj := variable.Value
+
+		// obj must be an object/struct or vector
+
+		switch obj := obj.(type) {
+		case *ObjectValue:
+			lastObj = obj
+		case *VectorValue:
+			lastObj = obj.ObjectValue
+		default:
+			return nil
+		}
+
+		return s.searchObjectVariable(strings.Join(parts[1:], "."), lastObj)
+	}
+
+	obj, ok := lastObj.(*ObjectValue)
+
+	if ok {
+		lastObj = obj.InternalScope.GetVariable(parts[0]).Value
+
+		return s.searchObjectVariable(strings.Join(parts[1:], "."), lastObj)
+	} else {
+		log.Fatal("idk what u did, cant convert to object")
+		return nil
+	}
+}
+
 func (s *BaseScope) AddFunction(name string, function value.IVOR) {
 	s.functions[name] = function
 }
 
 func (s *BaseScope) GetFunction(name string) (value.IVOR, string) {
-	// Todo: suport for structs properties
 
 	// verify if is refering to and object/struct function
 	if strings.Contains(name, ".") {
@@ -272,10 +314,6 @@ func (s *ScopeTrace) Reset() {
 
 func (s *ScopeTrace) AddVariable(name string, varType string, value value.IVOR, isConst bool, allowNil bool, token antlr.Token) (*Variable, string) {
 	return s.CurrentScope.AddVariable(name, varType, value, isConst, allowNil, token)
-}
-
-func (s *ScopeTrace) AddVector(name string, varType string, value value.IVOR, isConst bool, allowNil bool, token antlr.Token) (*Variable, string) {
-	return s.CurrentScope.AddVector(name, varType, value, isConst, allowNil, token)
 }
 
 func (s *ScopeTrace) GetVariable(name string) *Variable {

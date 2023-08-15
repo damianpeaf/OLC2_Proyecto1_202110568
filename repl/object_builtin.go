@@ -74,6 +74,7 @@ func appendCustomExec(builtinRef *ObjectBuiltInFunction, visitor *ReplVisitor, a
 		return
 	}
 	vector.InternalValue = append(vector.InternalValue, arg.Object)
+	vector.updateProps()
 }
 
 // 2. vector.remove(at: Int) -> nil
@@ -114,6 +115,7 @@ func removeCustomExec(builtinRef *ObjectBuiltInFunction, visitor *ReplVisitor, a
 
 	// remove the element
 	vector.InternalValue = append(vector.InternalValue[:arg.Object.Value().(int)], vector.InternalValue[arg.Object.Value().(int)+1:]...)
+	vector.updateProps()
 }
 
 // 3. removeLast
@@ -137,47 +139,7 @@ func removeLastCustomExec(builtinRef *ObjectBuiltInFunction, visitor *ReplVisito
 
 	// remove the last element
 	vector.InternalValue = vector.InternalValue[:vector.Size()-1]
-}
-
-// 3. isEmpty
-// vector.isEmpty() -> Bool
-
-// parameters:
-
-var isEmptyParams = []*Param{}
-
-func isEmptyCustomExec(builtinRef *ObjectBuiltInFunction, visitor *ReplVisitor, args map[string]*Argument, token antlr.Token) {
-
-	// get the vector
-	vector := builtinRef.Object.AuxObject.(*VectorValue)
-
-	if vector.Size() == 0 {
-		builtinRef.ReturnValue = &value.BoolValue{
-			InternalValue: true,
-		}
-		return
-	}
-
-	builtinRef.ReturnValue = &value.BoolValue{
-		InternalValue: false,
-	}
-}
-
-// 4. count
-// vector.count() -> Int
-
-// parameters:
-
-var countParams = []*Param{}
-
-func countCustomExec(builtinRef *ObjectBuiltInFunction, visitor *ReplVisitor, args map[string]*Argument, token antlr.Token) {
-
-	// get the vector
-	vector := builtinRef.Object.AuxObject.(*VectorValue)
-
-	builtinRef.ReturnValue = &value.IntValue{
-		InternalValue: vector.Size(),
-	}
+	vector.updateProps()
 }
 
 func AddVectorBuiltins(vectorRef *VectorValue) {
@@ -214,22 +176,11 @@ func AddVectorBuiltins(vectorRef *VectorValue) {
 		CustomExec: removeLastCustomExec,
 	})
 
-	vectorScope.AddFunction("isEmpty", &ObjectBuiltInFunction{
-		Function: &Function{
-			Param: isEmptyParams,
-		},
-		Object:     vectorInternalObject,
-		CustomExec: isEmptyCustomExec,
-	})
+	// make isEmpty a property
+	vectorScope.AddVariable("isEmpty", value.IVOR_BOOL, vectorRef.IsEmpty, true, false, nil)
 
-	vectorScope.AddFunction("count", &ObjectBuiltInFunction{
-		Function: &Function{
-			Param: countParams,
-		},
-		Object:     vectorInternalObject,
-		CustomExec: countCustomExec,
-	})
+	// make count a property
+	vectorScope.AddVariable("count", value.IVOR_INT, vectorRef.SizeValue, true, false, nil)
 
 	vectorRef.ObjectValue = vectorInternalObject
-
 }

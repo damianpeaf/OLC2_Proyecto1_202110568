@@ -26,10 +26,8 @@ decl_stmt:
 	var_type ID COLON type EQUALS expr		# TypeValueDecl
 	| var_type ID EQUALS expr				# ValueDecl
 	| var_type ID COLON type INTERROGATION	# TypeDecl;
-// | var_type ID COLON LBRACK type RBRACK EQUALS vector_expr	# VectorDecl;
 
 vector_expr: LBRACK expr (COMMA expr)* RBRACK # VectorItemList;
-// | id_pattern						# VectoReferece;
 
 vector_item: id_pattern LBRACK expr RBRACK # VectorItem;
 
