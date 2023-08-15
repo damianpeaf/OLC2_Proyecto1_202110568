@@ -2,7 +2,9 @@ package repl
 
 import (
 	"fmt"
+	"log"
 	"main/value"
+	"strings"
 
 	"github.com/antlr4-go/antlr/v4"
 )
@@ -115,14 +117,19 @@ func (s *BaseScope) AddFunction(name string, function value.IVOR) {
 	s.functions[name] = function
 }
 
-func (s *BaseScope) GetFunction(name string) value.IVOR {
+func (s *BaseScope) GetFunction(name string) (value.IVOR, string) {
 	// Todo: suport for structs properties
+
+	// verify if is refering to and object/struct function
+	if strings.Contains(name, ".") {
+		return s.searchObjectFunction(name, nil)
+	}
 
 	initialScope := s
 
 	for {
 		if function, ok := initialScope.functions[name]; ok {
-			return function
+			return function, ""
 		}
 
 		if initialScope.parent == nil {
@@ -132,7 +139,67 @@ func (s *BaseScope) GetFunction(name string) value.IVOR {
 		initialScope = initialScope.parent
 	}
 
-	return nil
+	return nil, "La funcion " + name + " no existe"
+}
+
+// obj1.obj2.func1()
+
+func (s *BaseScope) searchObjectFunction(name string, lastObj value.IVOR) (value.IVOR, string) {
+
+	// split name by dot
+	parts := strings.Split(name, ".")
+
+	if len(parts) == 0 {
+		log.Fatal("idk what u did, cant split by dot")
+		return nil, ""
+	}
+
+	if len(parts) == 1 {
+		obj, ok := lastObj.(*ObjectValue)
+
+		if ok {
+			return obj.InternalScope.GetFunction(name)
+		}
+
+		log.Fatal("idk what u did, cant convert to object")
+		return nil, ""
+	}
+
+	// then parts should be 2 or more
+
+	if lastObj == nil {
+		variable := s.GetVariable(parts[0])
+
+		if variable == nil {
+			return nil, "No se puede acceder a la propiedad " + parts[0]
+		}
+
+		obj := variable.Value
+
+		// obj must be an object/struct or vector
+
+		switch obj := obj.(type) {
+		case *ObjectValue:
+			lastObj = obj
+		case *VectorValue:
+			lastObj = obj.ObjectValue
+		default:
+			return nil, "La propiedad '" + variable.Name + "' de tipo " + obj.Type() + " no tiene propiedades"
+		}
+
+		return s.searchObjectFunction(strings.Join(parts[1:], "."), lastObj)
+	}
+
+	obj, ok := lastObj.(*ObjectValue)
+
+	if ok {
+		lastObj = obj.InternalScope.GetVariable(parts[0]).Value
+
+		return s.searchObjectFunction(strings.Join(parts[1:], "."), lastObj)
+	} else {
+		log.Fatal("idk what u did, cant convert to object")
+		return nil, ""
+	}
 }
 
 func (s *BaseScope) Reset() {
@@ -208,7 +275,7 @@ func (s *ScopeTrace) AddFunction(name string, function value.IVOR) {
 	s.CurrentScope.AddFunction(name, function)
 }
 
-func (s *ScopeTrace) GetFunction(name string) value.IVOR {
+func (s *ScopeTrace) GetFunction(name string) (value.IVOR, string) {
 	return s.CurrentScope.GetFunction(name)
 }
 
@@ -245,4 +312,18 @@ func NewScopeTrace() *ScopeTrace {
 		GlobalScope:  globalScope,
 		CurrentScope: globalScope,
 	}
+}
+
+func NewVectorScope() *BaseScope {
+	var scope = &BaseScope{
+		name:      "vector",
+		variables: make(map[string]*Variable),
+		children:  make([]*BaseScope, 0),
+		functions: make(map[string]value.IVOR),
+		parent:    nil,
+	}
+
+	// register object built-in functions
+
+	return scope
 }

@@ -10,12 +10,13 @@ import (
 )
 
 type Function struct {
-	Name        string
-	Param       []*Param
-	ReturnType  string
-	Body        []compiler.IStmtContext
-	DeclScope   *BaseScope
-	ReturnValue value.IVOR
+	Name            string
+	Param           []*Param
+	ReturnType      string
+	ReturnTypeToken antlr.Token
+	Body            []compiler.IStmtContext
+	DeclScope       *BaseScope
+	ReturnValue     value.IVOR
 	// TODO: suport for structs, mutator, self, etc
 }
 
@@ -35,7 +36,7 @@ func (f *Function) Exec(visitor *ReplVisitor, args []*Argument, token antlr.Toke
 	argsOk, argsMap := f.ValidateArgs(context, args, token)
 
 	if !argsOk {
-		f.ValidateReturn(context, value.DefaultNilValue, token)
+		f.ReturnValue = value.DefaultNilValue
 		return
 	}
 
@@ -86,7 +87,7 @@ func (f *Function) Exec(visitor *ReplVisitor, args []*Argument, token antlr.Toke
 		visitor.Visit(stmt)
 	}
 
-	f.ValidateReturn(context, value.DefaultNilValue, token)
+	// f.ValidateReturn(context, value.DefaultNilValue, token)
 	// return
 }
 
@@ -104,6 +105,8 @@ func (f *Function) ValidateArgs(context *ReplContext, args []*Argument, token an
 	for _, arg := range args {
 		argsMap[arg.Name] = arg
 	}
+
+	errorFound := false
 
 	for i, param := range f.Param {
 
@@ -125,23 +128,30 @@ func (f *Function) ValidateArgs(context *ReplContext, args []*Argument, token an
 		// validate arg exists
 		if argToValidate == nil {
 			context.ErrorTable.NewSemanticError(token, fmt.Sprintf("Argumento %s no especificado", param.InnerName))
-			return false, nil
+			errorFound = true
+			continue
 		}
 
 		// validate type
-		if argToValidate.Object.Type() != param.Type {
+		if argToValidate.Object.Type() != param.Type && param.Type != value.IVOR_ANY {
 			context.ErrorTable.NewSemanticError(token, fmt.Sprintf("Tipo de argumento %s invalido", param.InnerName))
-			return false, nil
+			errorFound = true
+			continue
 		}
 
 		// validate pass by reference
 		if argToValidate.PassByReference != param.PassByReference {
-			context.ErrorTable.NewSemanticError(token, fmt.Sprintf("Argumento %s no es por referencia", param.InnerName))
-			return false, nil
+			context.ErrorTable.NewSemanticError(token, fmt.Sprintf("Argumento %s no es pasado por referencia", param.InnerName))
+			errorFound = true
+			continue
 		}
 
 		// add to final args map
 		finalArgsMap[param.InnerName] = argToValidate
+	}
+
+	if errorFound {
+		return false, nil
 	}
 
 	return true, finalArgsMap
@@ -150,7 +160,9 @@ func (f *Function) ValidateArgs(context *ReplContext, args []*Argument, token an
 func (f *Function) ValidateReturn(context *ReplContext, val value.IVOR, token antlr.Token) {
 
 	if val.Type() != f.ReturnType {
-		context.ErrorTable.NewSemanticError(token, fmt.Sprintf("Tipo de retorno invalido, se esperaba %s, se obtuvo %s", f.ReturnType, val.Type()))
+		if f.ReturnTypeToken != nil {
+			context.ErrorTable.NewSemanticError(f.ReturnTypeToken, fmt.Sprintf("Tipo de retorno invalido, se esperaba %s, se obtuvo %s", f.ReturnType, val.Type()))
+		}
 
 		f.ReturnValue = value.DefaultNilValue
 	}

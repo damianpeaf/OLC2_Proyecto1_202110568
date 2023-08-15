@@ -180,12 +180,7 @@ func (v *ReplVisitor) VisitVectorItemList(ctx *compiler.VectorItemListContext) i
 		itemType = vectorItems[0].Type()
 	}
 
-	return &value.VectorValue{
-		InternalValue: vectorItems,
-		CurrentIndex:  0,
-		Builtins:      make(map[string]value.IVOR, 0), // TODO: Add builtins
-		ItemType:      itemType,
-	}
+	return NewVectorValue(vectorItems, itemType)
 }
 
 func (v *ReplVisitor) VisitVectoReferece(ctx *compiler.VectoRefereceContext) interface{} {
@@ -611,19 +606,19 @@ func (v *ReplVisitor) VisitInnerWhile(ctx *compiler.WhileStmtContext, condition 
 func (v *ReplVisitor) VisitForStmt(ctx *compiler.ForStmtContext) interface{} {
 
 	varName := ctx.ID().GetText()
-	var iterableItem *value.VectorValue = value.DefaultEmptyVectorValue
+	var iterableItem *VectorValue = DefaultEmptyVectorValue
 
 	if ctx.Range_() != nil {
-		iterableItem = v.Visit(ctx.Range_()).(*value.VectorValue)
+		iterableItem = v.Visit(ctx.Range_()).(*VectorValue)
 	}
 
 	if ctx.Expr() != nil {
 		iterableValue := v.Visit(ctx.Expr()).(value.IVOR)
 
 		if iterableValue.Type() == value.IVOR_VECTOR {
-			iterableItem = iterableValue.(*value.VectorValue)
+			iterableItem = iterableValue.(*VectorValue)
 		} else if iterableValue.Type() == value.IVOR_STRING {
-			iterableItem = iterableValue.(*value.StringValue).ToVector()
+			iterableItem = StringToVector(iterableValue.(*value.StringValue))
 		} else {
 			v.ErrorTable.NewSemanticError(ctx.GetStart(), "El valor del rango debe ser un vector o una cadena")
 			return nil
@@ -663,13 +658,14 @@ func (v *ReplVisitor) VisitForStmt(ctx *compiler.ForStmtContext) interface{} {
 
 	v.VisitInnerFor(ctx, outerForScope, innerForScope, forItem, iterableItem, iterableVariable)
 
-	v.ScopeTrace.PopScope() // pop inner for scope
-	v.ScopeTrace.PopScope() // pop outer for scope
+	v.ScopeTrace.PopScope()    // pop inner for scope
+	v.ScopeTrace.PopScope()    // pop outer for scope
+	v.CallStack.Clean(forItem) // ? clean item if it's still in call stack
 
 	return nil
 }
 
-func (v *ReplVisitor) VisitInnerFor(ctx *compiler.ForStmtContext, outerForScope *BaseScope, innerForScope *BaseScope, forItem *CallStackItem, iterableItem *value.VectorValue, iterableVariable *Variable) {
+func (v *ReplVisitor) VisitInnerFor(ctx *compiler.ForStmtContext, outerForScope *BaseScope, innerForScope *BaseScope, forItem *CallStackItem, iterableItem *VectorValue, iterableVariable *Variable) {
 
 	// reset scope
 	innerForScope.Reset()
@@ -738,10 +734,9 @@ func (v *ReplVisitor) VisitNumericRange(ctx *compiler.NumericRangeContext) inter
 		})
 	}
 
-	return &value.VectorValue{
+	return &VectorValue{
 		InternalValue: values,
 		CurrentIndex:  0,
-		Builtins:      make(map[string]value.IVOR, 0), // ? todo: add builtins ?
 		ItemType:      value.IVOR_INT,
 	}
 }
@@ -820,10 +815,10 @@ func (v *ReplVisitor) VisitFuncCall(ctx *compiler.FuncCallContext) interface{} {
 
 	funcName := v.Visit(ctx.Id_pattern()).(string)
 
-	funcObj := v.ScopeTrace.GetFunction(funcName)
+	funcObj, msg := v.ScopeTrace.GetFunction(funcName)
 
 	if funcObj == nil {
-		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Funcion "+funcName+" no encontrada")
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
 		return value.DefaultNilValue
 	}
 
@@ -833,9 +828,9 @@ func (v *ReplVisitor) VisitFuncCall(ctx *compiler.FuncCallContext) interface{} {
 		args = v.Visit(ctx.Arg_list()).([]*Argument)
 	}
 
-	switch funcObj.Type() {
-	case value.IVOR_BUILTIN_FUNCTION:
-		returnValue, ok, msg := funcObj.(*BuiltInFunction).Exec(v.GetReplContext(), args)
+	switch funcObj := funcObj.(type) {
+	case *BuiltInFunction:
+		returnValue, ok, msg := funcObj.Exec(v.GetReplContext(), args)
 
 		if !ok {
 
@@ -849,9 +844,13 @@ func (v *ReplVisitor) VisitFuncCall(ctx *compiler.FuncCallContext) interface{} {
 
 		return returnValue
 
-	case value.IVOR_FUNCTION:
-		funcObj.(*Function).Exec(v, args, ctx.GetStart())
-		return funcObj.(*Function).ReturnValue
+	case *Function:
+		funcObj.Exec(v, args, ctx.GetStart())
+		return funcObj.ReturnValue
+
+	case *ObjectBuiltInFunction:
+		funcObj.Exec(v, args, ctx.GetStart())
+		return funcObj.ReturnValue
 
 	default:
 		log.Fatal("Function type not found")
@@ -914,20 +913,35 @@ func (v *ReplVisitor) VisitFuncDecl(ctx *compiler.FuncDeclContext) interface{} {
 		params = v.Visit(ctx.Param_list()).([]*Param)
 	}
 
+	if len(params) > 0 {
+
+		baseParamType := params[0].ParamType()
+
+		for _, param := range params {
+			if param.ParamType() != baseParamType {
+				v.ErrorTable.NewSemanticError(param.Token, "Todos los parametros de la funcion deben ser del mismo tipo")
+				return nil
+			}
+		}
+	}
+
 	returnType := value.IVOR_NIL
+	var returnTypeToken antlr.Token = nil
 
 	if ctx.Primitive_type() != nil {
 		returnType = ctx.Primitive_type().GetText()
+		returnTypeToken = ctx.Primitive_type().GetStart()
 	}
 
 	body := ctx.AllStmt()
 
 	function := &Function{ // pointer ?
-		Name:       funcName,
-		Param:      params,
-		ReturnType: returnType,
-		Body:       body,
-		DeclScope:  v.ScopeTrace.CurrentScope,
+		Name:            funcName,
+		Param:           params,
+		ReturnType:      returnType,
+		Body:            body,
+		DeclScope:       v.ScopeTrace.CurrentScope,
+		ReturnTypeToken: returnTypeToken,
 	}
 
 	v.ScopeTrace.AddFunction(funcName, function)
@@ -949,12 +963,19 @@ func (v *ReplVisitor) VisitParamList(ctx *compiler.ParamListContext) interface{}
 func (v *ReplVisitor) VisitFuncParam(ctx *compiler.FuncParamContext) interface{} {
 
 	externName := ""
+	innerName := ""
 
-	if ctx.ID(0) != nil {
+	// at least ID(0) is defined
+	// only 1 ID defined
+	if ctx.ID(1) == nil {
+		// innerName : type
+		// _ : type
+		innerName = ctx.ID(0).GetText()
+	} else {
+		// externName innerName : type
 		externName = ctx.ID(0).GetText()
+		innerName = ctx.ID(1).GetText()
 	}
-
-	innerName := ctx.ID(1).GetText()
 
 	passByReference := false
 
@@ -970,6 +991,7 @@ func (v *ReplVisitor) VisitFuncParam(ctx *compiler.FuncParamContext) interface{}
 		InnerName:       innerName,
 		PassByReference: passByReference,
 		Type:            paramType,
+		Token:           ctx.GetStart(),
 	}
 
 }

@@ -1,11 +1,13 @@
-package value
+package repl
+
+import "main/value"
 
 // implements ivor interface
 
 type VectorValue struct {
-	InternalValue []IVOR
+	*ObjectValue
+	InternalValue []value.IVOR
 	CurrentIndex  int
-	Builtins      map[string]IVOR
 	ItemType      string
 }
 
@@ -14,7 +16,7 @@ func (v VectorValue) Value() interface{} {
 }
 
 func (v VectorValue) Type() string {
-	return IVOR_VECTOR
+	return value.IVOR_VECTOR
 }
 
 func (v VectorValue) Size() int {
@@ -29,7 +31,7 @@ func (v *VectorValue) Next() bool {
 	return false
 }
 
-func (v *VectorValue) Current() IVOR {
+func (v *VectorValue) Current() value.IVOR {
 	return v.InternalValue[v.CurrentIndex]
 }
 
@@ -37,9 +39,24 @@ func (v *VectorValue) Reset() {
 	v.CurrentIndex = 0
 }
 
+var DefaultVectorInternalScope = &BaseScope{
+	name: "vector",
+}
+
+func NewVectorValue(vectorItems []value.IVOR, itemType string) *VectorValue {
+	vector := &VectorValue{
+		InternalValue: vectorItems,
+		CurrentIndex:  0,
+		ItemType:      itemType,
+	}
+
+	AddVectorBuiltins(vector)
+
+	return vector
+}
+
 var DefaultEmptyVectorValue = &VectorValue{
-	InternalValue: []IVOR{},
+	InternalValue: []value.IVOR{},
 	CurrentIndex:  0,
-	Builtins:      nil,
-	ItemType:      IVOR_NIL,
+	ItemType:      value.IVOR_NIL,
 }

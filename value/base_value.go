@@ -10,6 +10,8 @@ const (
 	IVOR_BUILTIN_FUNCTION = "builtin_function"
 	IVOR_FUNCTION         = "function"
 	IVOR_VECTOR           = "vector"
+	IVOR_OBJECT           = "object"
+	IVOR_ANY              = "any"
 )
 
 type IVOR interface {
