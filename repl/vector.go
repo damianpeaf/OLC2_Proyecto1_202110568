@@ -9,6 +9,7 @@ type VectorValue struct {
 	InternalValue []value.IVOR
 	CurrentIndex  int
 	ItemType      string
+	FullType      string
 }
 
 func (v VectorValue) Value() interface{} {
@@ -16,7 +17,7 @@ func (v VectorValue) Value() interface{} {
 }
 
 func (v VectorValue) Type() string {
-	return value.IVOR_VECTOR
+	return v.FullType
 }
 
 func (v VectorValue) Size() int {
@@ -61,11 +62,7 @@ func (v *VectorValue) Copy() value.IVOR {
 		internalCopy[i] = item.Copy()
 	}
 
-	return &VectorValue{
-		InternalValue: internalCopy,
-		CurrentIndex:  0,
-		ItemType:      v.ItemType,
-	}
+	return NewVectorValue(internalCopy, v.FullType, v.ItemType)
 
 }
 
@@ -73,11 +70,12 @@ var DefaultVectorInternalScope = &BaseScope{
 	name: "vector",
 }
 
-func NewVectorValue(vectorItems []value.IVOR, itemType string) *VectorValue {
+func NewVectorValue(vectorItems []value.IVOR, fullType, itemType string) *VectorValue {
 	vector := &VectorValue{
 		InternalValue: vectorItems,
 		CurrentIndex:  0,
 		ItemType:      itemType,
+		FullType:      fullType,
 	}
 
 	AddVectorBuiltins(vector)
@@ -85,11 +83,7 @@ func NewVectorValue(vectorItems []value.IVOR, itemType string) *VectorValue {
 	return vector
 }
 
-var DefaultEmptyVectorValue = &VectorValue{
-	InternalValue: []value.IVOR{},
-	CurrentIndex:  0,
-	ItemType:      value.IVOR_NIL,
-}
+var DefaultEmptyVectorValue = NewVectorValue([]value.IVOR{}, "["+value.IVOR_ANY+"]", value.IVOR_ANY)
 
 type VectorItemReference struct {
 	Vector *VectorValue

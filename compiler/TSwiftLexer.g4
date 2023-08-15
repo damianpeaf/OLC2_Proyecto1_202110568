@@ -36,12 +36,8 @@ INOUT_KW: 'inout';
 // ...
 IN_KW: 'in';
 
-// Types
-INTEGER_TYPE: 'Int';
-FLOAT_TYPE: 'Float';
-STRING_TYPE: 'String';
-BOOL_TYPE: 'Bool';
-CHARACTER_TYPE: 'Character';
+// Types INTEGER_TYPE: 'Int'; FLOAT_TYPE: 'Float'; STRING_TYPE: 'String'; BOOL_TYPE: 'Bool';
+// CHARACTER_TYPE: 'Character';
 
 // Literals
 

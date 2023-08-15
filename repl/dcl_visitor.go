@@ -81,9 +81,9 @@ func (v *DclVisitor) VisitFuncDecl(ctx *compiler.FuncDeclContext) interface{} {
 	returnType := value.IVOR_NIL
 	var returnTypeToken antlr.Token = nil
 
-	if ctx.Primitive_type() != nil {
-		returnType = ctx.Primitive_type().GetText()
-		returnTypeToken = ctx.Primitive_type().GetStart()
+	if ctx.Type_() != nil {
+		returnType = ctx.Type_().GetText()
+		returnTypeToken = ctx.Type_().GetStart()
 	}
 
 	body := ctx.AllStmt()
@@ -137,7 +137,7 @@ func (v *DclVisitor) VisitFuncParam(ctx *compiler.FuncParamContext) interface{} 
 	}
 
 	// todo: Change primitive type to a more general type
-	paramType := ctx.Primitive_type().GetText()
+	paramType := ctx.Type_().GetText()
 
 	return &Param{
 		ExternName:      externName,

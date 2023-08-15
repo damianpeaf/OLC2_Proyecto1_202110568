@@ -37,6 +37,10 @@ func (v *ReplVisitor) GetReplContext() *ReplContext {
 	}
 }
 
+func (v *ReplVisitor) ValidType(_type string) bool {
+	return v.ScopeTrace.GlobalScope.ValidType(_type)
+}
+
 func (v *ReplVisitor) Visit(tree antlr.ParseTree) interface{} {
 
 	switch val := tree.(type) {
@@ -95,8 +99,7 @@ func (v *ReplVisitor) VisitTypeValueDecl(ctx *compiler.TypeValueDeclContext) int
 
 	isConst := isDeclConst(ctx.Var_type().GetText())
 	varName := ctx.ID().GetText()
-	// todo: Change primitive type to a more general type
-	varType := ctx.Primitive_type().GetText()
+	varType := v.Visit(ctx.Type_()).(string)
 	varValue := v.Visit(ctx.Expr()).(value.IVOR)
 
 	variable, msg := v.ScopeTrace.AddVariable(varName, varType, varValue, isConst, false, ctx.GetStart())
@@ -114,7 +117,6 @@ func (v *ReplVisitor) VisitValueDecl(ctx *compiler.ValueDeclContext) interface{}
 	isConst := isDeclConst(ctx.Var_type().GetText())
 	varName := ctx.ID().GetText()
 	varValue := v.Visit(ctx.Expr()).(value.IVOR)
-	// todo: Change primitive type to a more general type
 	varType := varValue.Type()
 
 	variable, msg := v.ScopeTrace.AddVariable(varName, varType, varValue, isConst, false, ctx.GetStart())
@@ -130,8 +132,7 @@ func (v *ReplVisitor) VisitTypeDecl(ctx *compiler.TypeDeclContext) interface{} {
 
 	isConst := isDeclConst(ctx.Var_type().GetText())
 	varName := ctx.ID().GetText()
-	// todo: Change primitive type to a more general type
-	varType := ctx.Primitive_type().GetText()
+	varType := v.Visit(ctx.Type_()).(string)
 
 	if isConst {
 		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Las constantes Deben tener un valor asignado")
@@ -147,24 +148,22 @@ func (v *ReplVisitor) VisitTypeDecl(ctx *compiler.TypeDeclContext) interface{} {
 	return nil
 }
 
-func (v *ReplVisitor) VisitVectorDecl(ctx *compiler.VectorDeclContext) interface{} {
+// func (v *ReplVisitor) VisitVectorDecl(ctx *compiler.VectorDeclContext) interface{} {
 
-	isConst := isDeclConst(ctx.Var_type().GetText())
-	varName := ctx.ID().GetText()
-	// todo: Change primitive type to a more general type
-	varType := value.IVOR_VECTOR
-	varAuxType := ctx.Primitive_type().GetText()
+// 	isConst := isDeclConst(ctx.Var_type().GetText())
+// 	varName := ctx.ID().GetText()
+// 	varType := v.Visit(ctx.Type_()).(string)
 
-	varValue := v.Visit(ctx.Vector_expr()).(value.IVOR)
+// 	varValue := v.Visit(ctx.Vector_expr()).(value.IVOR)
 
-	variable, msg := v.ScopeTrace.AddVector(varName, varType, varAuxType, varValue, isConst, false, ctx.GetStart()) // ? ALLOW NIL
+// 	variable, msg := v.ScopeTrace.AddVariable(varName, varType, varValue, isConst, false, ctx.GetStart()) // ? ALLOW NIL
 
-	if variable == nil {
-		v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
-	}
+// 	if variable == nil {
+// 		v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (v *ReplVisitor) VisitVectorItemList(ctx *compiler.VectorItemListContext) interface{} {
 
@@ -187,27 +186,29 @@ func (v *ReplVisitor) VisitVectorItemList(ctx *compiler.VectorItemListContext) i
 		}
 	}
 
-	return NewVectorValue(vectorItems, itemType)
+	return NewVectorValue(vectorItems, "["+itemType+"]", itemType)
 }
 
-func (v *ReplVisitor) VisitVectoReferece(ctx *compiler.VectoRefereceContext) interface{} {
+func (v *ReplVisitor) VisitType(ctx *compiler.TypeContext) interface{} {
 
-	varName := ctx.Id_pattern().GetText()
+	// remove white spaces
+	_type := ctx.GetText()
 
-	variable := v.ScopeTrace.GetVariable(varName)
-
-	if variable == nil {
-		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Variable "+varName+" no encontrada")
-		return value.DefaultNilValue
+	if v.ValidType(_type) {
+		return _type
 	}
 
-	if variable.Type != value.IVOR_VECTOR {
-		v.ErrorTable.NewSemanticError(ctx.GetStart(), "La variable "+varName+" no es un vector")
-		return value.DefaultNilValue
+	// TODO: matrix type
+	if IsVectorType(_type) {
+		// remove [ ]
+		internType := RemoveBrackets(_type)
+		if v.ValidType(internType) {
+			return _type
+		}
 	}
 
-	// copy vector
-	return variable.Value.Copy()
+	v.ErrorTable.NewSemanticError(ctx.GetStart(), "Tipo "+ctx.GetText()+" no encontrado")
+	return value.IVOR_NIL
 }
 
 func (v *ReplVisitor) VisitVectorItem(ctx *compiler.VectorItemContext) interface{} {
@@ -221,7 +222,7 @@ func (v *ReplVisitor) VisitVectorItem(ctx *compiler.VectorItemContext) interface
 		return nil
 	}
 
-	if variable.Type != value.IVOR_VECTOR {
+	if !IsVectorType(variable.Type) {
 		v.ErrorTable.NewSemanticError(ctx.GetStart(), "La variable "+varName+" no es un vector")
 		return nil
 	}
@@ -313,17 +314,36 @@ func (v *ReplVisitor) VisitVectorAssign(ctx *compiler.VectorAssignContext) inter
 	if !ok {
 		return nil
 	}
-
-	itemValue := v.Visit(ctx.Expr()).(value.IVOR)
+	leftValue := itemRef.Value
+	rightValue := v.Visit(ctx.Expr()).(value.IVOR)
 
 	// check type
-
-	if itemValue.Type() != itemRef.Vector.ItemType {
-		v.ErrorTable.NewSemanticError(ctx.GetStart(), "No se puede asignar un valor de tipo "+itemValue.Type()+" a un vector de tipo "+itemRef.Vector.ItemType)
+	if rightValue.Type() != itemRef.Vector.ItemType {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "No se puede asignar un valor de tipo "+rightValue.Type()+" a un vector de tipo "+itemRef.Vector.ItemType)
 		return nil
 	}
 
-	itemRef.Vector.InternalValue[itemRef.Index] = itemValue
+	op := string(ctx.GetOp().GetText()[0])
+
+	if op == "=" {
+		itemRef.Vector.InternalValue[itemRef.Index] = rightValue
+		return nil
+	}
+
+	strat, ok := BinaryStrats[op]
+
+	if !ok {
+		log.Fatal("Binary operator not found")
+	}
+
+	ok, msg, varValue := strat.Validate(leftValue, rightValue)
+
+	if !ok {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
+		return nil
+	}
+
+	itemRef.Vector.InternalValue[itemRef.Index] = varValue
 
 	return nil
 }
@@ -401,6 +421,11 @@ func (v *ReplVisitor) VisitIdExp(ctx *compiler.IdExpContext) interface{} {
 		return value.DefaultNilValue
 	}
 
+	if IsVectorType(variable.Type) {
+		// copy vector
+		return variable.Value.Copy()
+	}
+
 	// ? pointer
 	return variable.Value
 }
@@ -422,6 +447,10 @@ func (v *ReplVisitor) VisitVectorItemExp(ctx *compiler.VectorItemExpContext) int
 
 func (v *ReplVisitor) VisitFuncCallExp(ctx *compiler.FuncCallExpContext) interface{} {
 	return v.Visit(ctx.Func_call())
+}
+
+func (v *ReplVisitor) VisitVectorExp(ctx *compiler.VectorExpContext) interface{} {
+	return v.Visit(ctx.Vector_expr())
 }
 
 func (v *ReplVisitor) VisitUnaryExp(ctx *compiler.UnaryExpContext) interface{} {
@@ -707,7 +736,7 @@ func (v *ReplVisitor) VisitForStmt(ctx *compiler.ForStmtContext) interface{} {
 	if ctx.Expr() != nil {
 		iterableValue := v.Visit(ctx.Expr()).(value.IVOR)
 
-		if iterableValue.Type() == value.IVOR_VECTOR {
+		if IsVectorType(iterableValue.Type()) {
 			iterableItem = iterableValue.(*VectorValue)
 		} else if iterableValue.Type() == value.IVOR_STRING {
 			iterableItem = StringToVector(iterableValue.(*value.StringValue))
@@ -1038,9 +1067,9 @@ func (v *ReplVisitor) VisitFuncDecl(ctx *compiler.FuncDeclContext) interface{} {
 	returnType := value.IVOR_NIL
 	var returnTypeToken antlr.Token = nil
 
-	if ctx.Primitive_type() != nil {
-		returnType = ctx.Primitive_type().GetText()
-		returnTypeToken = ctx.Primitive_type().GetStart()
+	if ctx.Type_() != nil {
+		returnType = v.Visit(ctx.Type_()).(string)
+		returnTypeToken = ctx.Type_().GetStart()
 	}
 
 	body := ctx.AllStmt()
@@ -1094,7 +1123,7 @@ func (v *ReplVisitor) VisitFuncParam(ctx *compiler.FuncParamContext) interface{}
 	}
 
 	// todo: Change primitive type to a more general type
-	paramType := ctx.Primitive_type().GetText()
+	paramType := v.Visit(ctx.Type_()).(string)
 
 	return &Param{
 		ExternName:      externName,

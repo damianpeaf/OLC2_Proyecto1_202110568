@@ -25,14 +25,8 @@ type TSwiftLanguageVisitor interface {
 	// Visit a parse tree produced by TSwiftLanguage#TypeDecl.
 	VisitTypeDecl(ctx *TypeDeclContext) interface{}
 
-	// Visit a parse tree produced by TSwiftLanguage#VectorDecl.
-	VisitVectorDecl(ctx *VectorDeclContext) interface{}
-
 	// Visit a parse tree produced by TSwiftLanguage#VectorItemList.
 	VisitVectorItemList(ctx *VectorItemListContext) interface{}
-
-	// Visit a parse tree produced by TSwiftLanguage#VectoReferece.
-	VisitVectoReferece(ctx *VectoRefereceContext) interface{}
 
 	// Visit a parse tree produced by TSwiftLanguage#VectorItem.
 	VisitVectorItem(ctx *VectorItemContext) interface{}
@@ -40,8 +34,8 @@ type TSwiftLanguageVisitor interface {
 	// Visit a parse tree produced by TSwiftLanguage#var_type.
 	VisitVar_type(ctx *Var_typeContext) interface{}
 
-	// Visit a parse tree produced by TSwiftLanguage#primitive_type.
-	VisitPrimitive_type(ctx *Primitive_typeContext) interface{}
+	// Visit a parse tree produced by TSwiftLanguage#type.
+	VisitType(ctx *TypeContext) interface{}
 
 	// Visit a parse tree produced by TSwiftLanguage#DirectAssign.
 	VisitDirectAssign(ctx *DirectAssignContext) interface{}
@@ -84,6 +78,9 @@ type TSwiftLanguageVisitor interface {
 
 	// Visit a parse tree produced by TSwiftLanguage#FuncCallExp.
 	VisitFuncCallExp(ctx *FuncCallExpContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#VectorExp.
+	VisitVectorExp(ctx *VectorExpContext) interface{}
 
 	// Visit a parse tree produced by TSwiftLanguage#UnaryExp.
 	VisitUnaryExp(ctx *UnaryExpContext) interface{}

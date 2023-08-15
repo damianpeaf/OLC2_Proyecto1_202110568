@@ -29,6 +29,11 @@ func (s *BaseScope) Children() []*BaseScope {
 	return s.children
 }
 
+func (s *BaseScope) ValidType(_type string) bool {
+	// TODO: implement struct type validation
+	return value.IsPrimitiveType(_type)
+}
+
 func (s *BaseScope) AddChild(child *BaseScope) {
 	s.children = append(s.children, child)
 	child.parent = s
@@ -72,14 +77,13 @@ func (s *BaseScope) AddVariable(name string, varType string, value value.IVOR, i
 	return variable, ""
 }
 
-func (s *BaseScope) AddVector(name string, varType string, auxType string, value value.IVOR, isConst bool, allowNil bool, token antlr.Token) (*Variable, string) {
+func (s *BaseScope) AddVector(name string, varType string, value value.IVOR, isConst bool, allowNil bool, token antlr.Token) (*Variable, string) {
 
 	variable := &Variable{
 		Name:     name,
 		Value:    value,
 		Type:     varType,
 		IsConst:  isConst,
-		AuxType:  auxType,
 		AllowNil: allowNil,
 		Token:    token,
 	}
@@ -270,8 +274,8 @@ func (s *ScopeTrace) AddVariable(name string, varType string, value value.IVOR, 
 	return s.CurrentScope.AddVariable(name, varType, value, isConst, allowNil, token)
 }
 
-func (s *ScopeTrace) AddVector(name string, varType string, auxType string, value value.IVOR, isConst bool, allowNil bool, token antlr.Token) (*Variable, string) {
-	return s.CurrentScope.AddVector(name, varType, auxType, value, isConst, allowNil, token)
+func (s *ScopeTrace) AddVector(name string, varType string, value value.IVOR, isConst bool, allowNil bool, token antlr.Token) (*Variable, string) {
+	return s.CurrentScope.AddVector(name, varType, value, isConst, allowNil, token)
 }
 
 func (s *ScopeTrace) GetVariable(name string) *Variable {

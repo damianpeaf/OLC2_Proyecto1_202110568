@@ -31,15 +31,7 @@ func (v *BaseTSwiftLanguageVisitor) VisitTypeDecl(ctx *TypeDeclContext) interfac
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseTSwiftLanguageVisitor) VisitVectorDecl(ctx *VectorDeclContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
 func (v *BaseTSwiftLanguageVisitor) VisitVectorItemList(ctx *VectorItemListContext) interface{} {
-	return v.VisitChildren(ctx)
-}
-
-func (v *BaseTSwiftLanguageVisitor) VisitVectoReferece(ctx *VectoRefereceContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
@@ -51,7 +43,7 @@ func (v *BaseTSwiftLanguageVisitor) VisitVar_type(ctx *Var_typeContext) interfac
 	return v.VisitChildren(ctx)
 }
 
-func (v *BaseTSwiftLanguageVisitor) VisitPrimitive_type(ctx *Primitive_typeContext) interface{} {
+func (v *BaseTSwiftLanguageVisitor) VisitType(ctx *TypeContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
@@ -108,6 +100,10 @@ func (v *BaseTSwiftLanguageVisitor) VisitVectorItemExp(ctx *VectorItemExpContext
 }
 
 func (v *BaseTSwiftLanguageVisitor) VisitFuncCallExp(ctx *FuncCallExpContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitVectorExp(ctx *VectorExpContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 

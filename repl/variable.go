@@ -10,7 +10,6 @@ type Variable struct {
 	Name     string
 	Value    value.IVOR
 	Type     string
-	AuxType  string
 	IsConst  bool
 	AllowNil bool
 	Token    antlr.Token

@@ -23,31 +23,24 @@ stmt:
 	| func_dcl;
 
 decl_stmt:
-	var_type ID COLON primitive_type EQUALS expr						# TypeValueDecl
-	| var_type ID EQUALS expr											# ValueDecl
-	| var_type ID COLON primitive_type INTERROGATION					# TypeDecl
-	| var_type ID COLON LBRACK primitive_type RBRACK EQUALS vector_expr	# VectorDecl;
+	var_type ID COLON type EQUALS expr		# TypeValueDecl
+	| var_type ID EQUALS expr				# ValueDecl
+	| var_type ID COLON type INTERROGATION	# TypeDecl;
+// | var_type ID COLON LBRACK type RBRACK EQUALS vector_expr	# VectorDecl;
 
-vector_expr:
-	LBRACK expr (COMMA expr)* RBRACK	# VectorItemList
-	| id_pattern						# VectoReferece;
+vector_expr: LBRACK expr (COMMA expr)* RBRACK # VectorItemList;
+// | id_pattern						# VectoReferece;
 
 vector_item: id_pattern LBRACK expr RBRACK # VectorItem;
 
 var_type: VAR_KW | LET_KW;
 
-// TODO: generic type
-primitive_type:
-	INTEGER_TYPE
-	| FLOAT_TYPE
-	| STRING_TYPE
-	| BOOL_TYPE
-	| CHARACTER_TYPE;
+type: ID | LBRACK ID RBRACK;
 
 assign_stmt:
-	id_pattern EQUALS expr								# DirectAssign
-	| id_pattern op = (PLUS_EQUALS | MINUS_EQUALS) expr	# ArithmeticAssign
-	| vector_item EQUALS expr							# VectorAssign;
+	id_pattern EQUALS expr											# DirectAssign
+	| id_pattern op = (PLUS_EQUALS | MINUS_EQUALS) expr				# ArithmeticAssign
+	| vector_item op = (PLUS_EQUALS | MINUS_EQUALS | EQUALS) expr	# VectorAssign;
 
 id_pattern: ID (DOT ID)* # IdPattern;
 
@@ -64,6 +57,7 @@ expr:
 	| id_pattern										# IdExp // a.a.a
 	| vector_item										# VectorItemExp // a.a.a[0]
 	| literal											# LiteralExp // 1, 1.0, "a", true, nil
+	| vector_expr										# VectorExp // [1, 2, 3]
 	| op = (NOT | MINUS) expr							# UnaryExp // !a, -a	
 	| left = expr op = (MULT | DIV | MOD) right = expr	# BinaryExp // a * b, a / b, a % b
 	| left = expr op = (PLUS | MINUS) right = expr		# BinaryExp // a + b, a - b
@@ -112,7 +106,7 @@ arg_list: func_arg (COMMA func_arg)* # ArgList;
 func_arg: (ID COLON)? (ANPERSAND)? (id_pattern | expr) # FuncArg;
 
 func_dcl:
-	FUNC_KW ID LPAREN param_list? RPAREN (ARROW primitive_type)? LBRACE stmt* RBRACE # FuncDecl;
+	FUNC_KW ID LPAREN param_list? RPAREN (ARROW type)? LBRACE stmt* RBRACE # FuncDecl;
 
 param_list: func_param (COMMA func_param)* # ParamList;
-func_param: ID? ID COLON INOUT_KW? primitive_type # FuncParam;
+func_param: ID? ID COLON INOUT_KW? type # FuncParam;

@@ -102,7 +102,7 @@ func (f *Function) Exec(visitor *ReplVisitor, args []*Argument, token antlr.Toke
 			continue
 		}
 
-		context.ScopeTrace.CurrentScope.AddVariable(varName, arg.Object.Type(), arg.Object, false, false, arg.Token)
+		context.ScopeTrace.CurrentScope.AddVariable(varName, arg.Object.Type(), arg.Object.Copy(), false, false, arg.Token)
 	}
 
 	// evaluate body
