@@ -5,6 +5,7 @@ options {
 	// language = Swift; superClass = SwiftParserBaseListener;
 }
 
+// make stmt* a new rule
 program: (stmt)* EOF?;
 
 delimiter: SEMICOLON? | EOF;
@@ -31,6 +32,8 @@ vector_expr:
 	LBRACK expr (COMMA expr)* RBRACK	# VectorItemList
 	| id_pattern						# VectoReferece;
 
+vector_item: id_pattern LBRACK expr RBRACK # VectorItem;
+
 var_type: VAR_KW | LET_KW;
 
 // TODO: generic type
@@ -43,7 +46,8 @@ primitive_type:
 
 assign_stmt:
 	id_pattern EQUALS expr								# DirectAssign
-	| id_pattern op = (PLUS_EQUALS | MINUS_EQUALS) expr	# ArithmeticAssign;
+	| id_pattern op = (PLUS_EQUALS | MINUS_EQUALS) expr	# ArithmeticAssign
+	| vector_item EQUALS expr							# VectorAssign;
 
 id_pattern: ID (DOT ID)* # IdPattern;
 
@@ -58,6 +62,7 @@ expr:
 	LPAREN expr RPAREN									# ParenExp // (a)
 	| func_call											# FuncCallExp // a.a.a()
 	| id_pattern										# IdExp // a.a.a
+	| vector_item										# VectorItemExp // a.a.a[0]
 	| literal											# LiteralExp // 1, 1.0, "a", true, nil
 	| op = (NOT | MINUS) expr							# UnaryExp // !a, -a	
 	| left = expr op = (MULT | DIV | MOD) right = expr	# BinaryExp // a * b, a / b, a % b

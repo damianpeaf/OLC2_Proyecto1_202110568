@@ -34,6 +34,9 @@ type TSwiftLanguageVisitor interface {
 	// Visit a parse tree produced by TSwiftLanguage#VectoReferece.
 	VisitVectoReferece(ctx *VectoRefereceContext) interface{}
 
+	// Visit a parse tree produced by TSwiftLanguage#VectorItem.
+	VisitVectorItem(ctx *VectorItemContext) interface{}
+
 	// Visit a parse tree produced by TSwiftLanguage#var_type.
 	VisitVar_type(ctx *Var_typeContext) interface{}
 
@@ -45,6 +48,9 @@ type TSwiftLanguageVisitor interface {
 
 	// Visit a parse tree produced by TSwiftLanguage#ArithmeticAssign.
 	VisitArithmeticAssign(ctx *ArithmeticAssignContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#VectorAssign.
+	VisitVectorAssign(ctx *VectorAssignContext) interface{}
 
 	// Visit a parse tree produced by TSwiftLanguage#IdPattern.
 	VisitIdPattern(ctx *IdPatternContext) interface{}
@@ -72,6 +78,9 @@ type TSwiftLanguageVisitor interface {
 
 	// Visit a parse tree produced by TSwiftLanguage#ParenExp.
 	VisitParenExp(ctx *ParenExpContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#VectorItemExp.
+	VisitVectorItemExp(ctx *VectorItemExpContext) interface{}
 
 	// Visit a parse tree produced by TSwiftLanguage#FuncCallExp.
 	VisitFuncCallExp(ctx *FuncCallExpContext) interface{}

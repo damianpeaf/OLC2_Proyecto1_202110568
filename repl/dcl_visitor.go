@@ -33,6 +33,24 @@ func (v *DclVisitor) Visit(tree antlr.ParseTree) interface{} {
 
 }
 
+func (v *DclVisitor) VisitProgram(ctx *compiler.ProgramContext) interface{} {
+
+	for _, stmt := range ctx.AllStmt() {
+		v.Visit(stmt)
+	}
+
+	return nil
+}
+
+func (v *DclVisitor) VisitStmt(ctx *compiler.StmtContext) interface{} {
+
+	if ctx.Func_dcl() != nil {
+		v.Visit(ctx.Func_dcl())
+	}
+
+	return nil
+}
+
 func (v *DclVisitor) VisitFuncDecl(ctx *compiler.FuncDeclContext) interface{} {
 
 	// TODO: supoort for structs functions

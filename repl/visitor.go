@@ -19,12 +19,12 @@ type ReplVisitor struct {
 	DclScan    bool
 }
 
-func NewVisitor() *ReplVisitor {
+func NewVisitor(dclVisitor *DclVisitor) *ReplVisitor {
 	return &ReplVisitor{
-		ScopeTrace: NewScopeTrace(),
+		ScopeTrace: dclVisitor.ScopeTrace,
+		ErrorTable: dclVisitor.ErrorTable,
 		CallStack:  NewCallStack(),
 		Console:    NewConsole(),
-		ErrorTable: NewErrorTable(),
 	}
 }
 
@@ -210,6 +210,44 @@ func (v *ReplVisitor) VisitVectoReferece(ctx *compiler.VectoRefereceContext) int
 	return variable.Value.Copy()
 }
 
+func (v *ReplVisitor) VisitVectorItem(ctx *compiler.VectorItemContext) interface{} {
+
+	varName := ctx.Id_pattern().GetText()
+
+	variable := v.ScopeTrace.GetVariable(varName)
+
+	if variable == nil {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Variable "+varName+" no encontrada")
+		return nil
+	}
+
+	if variable.Type != value.IVOR_VECTOR {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "La variable "+varName+" no es un vector")
+		return nil
+	}
+
+	index := v.Visit(ctx.Expr()).(value.IVOR)
+
+	if index.Type() != value.IVOR_INT {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "El indice del vector debe ser un entero")
+		return nil
+	}
+
+	vectorValue := variable.Value.(*VectorValue)
+	indexValue := index.(*value.IntValue).InternalValue
+
+	if !vectorValue.ValidIndex(indexValue) {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "El indice del vector esta fuera de rango")
+		return nil
+	}
+
+	return &VectorItemReference{
+		Vector: vectorValue,
+		Index:  indexValue,
+		Value:  vectorValue.Get(indexValue),
+	}
+}
+
 func (v *ReplVisitor) VisitDirectAssign(ctx *compiler.DirectAssignContext) interface{} {
 
 	varName := v.Visit(ctx.Id_pattern()).(string)
@@ -264,6 +302,28 @@ func (v *ReplVisitor) VisitArithmeticAssign(ctx *compiler.ArithmeticAssignContex
 			v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
 		}
 	}
+
+	return nil
+}
+
+func (v *ReplVisitor) VisitVectorAssign(ctx *compiler.VectorAssignContext) interface{} {
+
+	itemRef, ok := v.Visit(ctx.Vector_item()).(*VectorItemReference)
+
+	if !ok {
+		return nil
+	}
+
+	itemValue := v.Visit(ctx.Expr()).(value.IVOR)
+
+	// check type
+
+	if itemValue.Type() != itemRef.Vector.ItemType {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "No se puede asignar un valor de tipo "+itemValue.Type()+" a un vector de tipo "+itemRef.Vector.ItemType)
+		return nil
+	}
+
+	itemRef.Vector.InternalValue[itemRef.Index] = itemValue
 
 	return nil
 }
@@ -347,6 +407,17 @@ func (v *ReplVisitor) VisitIdExp(ctx *compiler.IdExpContext) interface{} {
 
 func (v *ReplVisitor) VisitParenExp(ctx *compiler.ParenExpContext) interface{} {
 	return v.Visit(ctx.Expr())
+}
+
+func (v *ReplVisitor) VisitVectorItemExp(ctx *compiler.VectorItemExpContext) interface{} {
+
+	itemRef, ok := v.Visit(ctx.Vector_item()).(*VectorItemReference)
+
+	if !ok {
+		return nil
+	}
+
+	return itemRef.Value
 }
 
 func (v *ReplVisitor) VisitFuncCallExp(ctx *compiler.FuncCallExpContext) interface{} {
@@ -920,6 +991,11 @@ func (v *ReplVisitor) VisitFuncArg(ctx *compiler.FuncArgContext) interface{} {
 }
 
 func (v *ReplVisitor) VisitFuncDecl(ctx *compiler.FuncDeclContext) interface{} {
+
+	if v.ScopeTrace.CurrentScope == v.ScopeTrace.GlobalScope {
+		// Already check by dcl visitor
+		return nil
+	}
 
 	// TODO: supoort for structs functions
 	if v.ScopeTrace.CurrentScope != v.ScopeTrace.GlobalScope {

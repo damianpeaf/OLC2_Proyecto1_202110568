@@ -34,7 +34,11 @@ func main() {
 
 		tree := parser.Program()
 
-		replVisitor := repl.NewVisitor()
+		dclVisitor := repl.NewDclVisitor()
+		dclVisitor.Visit(tree)
+
+		replVisitor := repl.NewVisitor(dclVisitor)
+
 		replVisitor.Visit(tree)
 
 		replVisitor.ScopeTrace.Print()

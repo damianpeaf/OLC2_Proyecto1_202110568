@@ -23,6 +23,20 @@ func (v VectorValue) Size() int {
 	return len(v.InternalValue)
 }
 
+func (v VectorValue) ValidIndex(index int) bool {
+
+	if index < 0 || index >= len(v.InternalValue) {
+		return false
+	}
+
+	return true
+
+}
+
+func (v VectorValue) Get(index int) value.IVOR {
+	return v.InternalValue[index]
+}
+
 func (v *VectorValue) Next() bool {
 	if v.CurrentIndex < len(v.InternalValue) {
 		v.CurrentIndex++
@@ -75,4 +89,10 @@ var DefaultEmptyVectorValue = &VectorValue{
 	InternalValue: []value.IVOR{},
 	CurrentIndex:  0,
 	ItemType:      value.IVOR_NIL,
+}
+
+type VectorItemReference struct {
+	Vector *VectorValue
+	Index  int
+	Value  value.IVOR
 }

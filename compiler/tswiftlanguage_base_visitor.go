@@ -43,6 +43,10 @@ func (v *BaseTSwiftLanguageVisitor) VisitVectoReferece(ctx *VectoRefereceContext
 	return v.VisitChildren(ctx)
 }
 
+func (v *BaseTSwiftLanguageVisitor) VisitVectorItem(ctx *VectorItemContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
 func (v *BaseTSwiftLanguageVisitor) VisitVar_type(ctx *Var_typeContext) interface{} {
 	return v.VisitChildren(ctx)
 }
@@ -56,6 +60,10 @@ func (v *BaseTSwiftLanguageVisitor) VisitDirectAssign(ctx *DirectAssignContext) 
 }
 
 func (v *BaseTSwiftLanguageVisitor) VisitArithmeticAssign(ctx *ArithmeticAssignContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitVectorAssign(ctx *VectorAssignContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
@@ -92,6 +100,10 @@ func (v *BaseTSwiftLanguageVisitor) VisitIdExp(ctx *IdExpContext) interface{} {
 }
 
 func (v *BaseTSwiftLanguageVisitor) VisitParenExp(ctx *ParenExpContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitVectorItemExp(ctx *VectorItemExpContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
