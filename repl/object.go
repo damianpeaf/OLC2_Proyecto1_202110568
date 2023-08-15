@@ -14,3 +14,7 @@ func (o ObjectValue) Value() interface{} {
 func (o ObjectValue) Type() string {
 	return value.IVOR_OBJECT
 }
+
+func (o ObjectValue) Copy() value.IVOR {
+	return o // ? deep clone
+}

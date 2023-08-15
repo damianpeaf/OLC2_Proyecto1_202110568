@@ -11,3 +11,7 @@ func (b BoolValue) Value() interface{} {
 func (b BoolValue) Type() string {
 	return IVOR_BOOL
 }
+
+func (b BoolValue) Copy() IVOR {
+	return &BoolValue{b.InternalValue}
+}

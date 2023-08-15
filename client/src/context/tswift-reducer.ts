@@ -68,7 +68,6 @@ export type TSwiftActionType =
     } | {
         type: 'set-errors',
         payload: {
-            // TODO: implement error type
             errors: TSwiftError[]
         }
     } | {

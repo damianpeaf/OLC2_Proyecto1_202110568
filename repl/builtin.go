@@ -20,6 +20,10 @@ func (b BuiltInFunction) Value() interface{} {
 	return b
 }
 
+func (b BuiltInFunction) Copy() value.IVOR {
+	return b
+}
+
 // * Print Function
 func Print(context *ReplContext, args []*Argument) (value.IVOR, bool, string) {
 

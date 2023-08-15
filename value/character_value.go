@@ -11,3 +11,7 @@ func (s CharacterValue) Value() interface{} {
 func (s CharacterValue) Type() string {
 	return IVOR_CHARACTER
 }
+
+func (s CharacterValue) Copy() IVOR {
+	return &CharacterValue{s.InternalValue}
+}

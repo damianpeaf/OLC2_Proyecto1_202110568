@@ -11,3 +11,7 @@ func (s StringValue) Value() interface{} {
 func (s StringValue) Type() string {
 	return IVOR_STRING
 }
+
+func (s StringValue) Copy() IVOR {
+	return StringValue{InternalValue: s.InternalValue}
+}

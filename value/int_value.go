@@ -11,3 +11,7 @@ func (i IntValue) Value() interface{} {
 func (i IntValue) Type() string {
 	return IVOR_INT
 }
+
+func (i IntValue) Copy() IVOR {
+	return &IntValue{i.InternalValue}
+}

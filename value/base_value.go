@@ -17,4 +17,5 @@ const (
 type IVOR interface {
 	Value() interface{}
 	Type() string
+	Copy() IVOR
 }

@@ -16,6 +16,7 @@ type ReplVisitor struct {
 	CallStack  *CallStack
 	Console    *Console
 	ErrorTable *ErrorTable
+	DclScan    bool
 }
 
 func NewVisitor() *ReplVisitor {
@@ -176,17 +177,37 @@ func (v *ReplVisitor) VisitVectorItemList(ctx *compiler.VectorItemListContext) i
 	var itemType = value.IVOR_NIL
 
 	if ctx.Expr(0) != nil {
-		// TODO: Validate that all items are of the same type
 		itemType = vectorItems[0].Type()
+
+		for _, item := range vectorItems {
+			if item.Type() != itemType {
+				v.ErrorTable.NewSemanticError(ctx.GetStart(), "Todos los items del vector deben ser del mismo tipo")
+				return value.DefaultNilValue
+			}
+		}
 	}
 
 	return NewVectorValue(vectorItems, itemType)
 }
 
 func (v *ReplVisitor) VisitVectoReferece(ctx *compiler.VectoRefereceContext) interface{} {
-	// TODO: Implement, copy the vector
-	fmt.Println("NOT IMPLEMENTED")
-	return nil
+
+	varName := ctx.Id_pattern().GetText()
+
+	variable := v.ScopeTrace.GetVariable(varName)
+
+	if variable == nil {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Variable "+varName+" no encontrada")
+		return value.DefaultNilValue
+	}
+
+	if variable.Type != value.IVOR_VECTOR {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "La variable "+varName+" no es un vector")
+		return value.DefaultNilValue
+	}
+
+	// copy vector
+	return variable.Value.Copy()
 }
 
 func (v *ReplVisitor) VisitDirectAssign(ctx *compiler.DirectAssignContext) interface{} {

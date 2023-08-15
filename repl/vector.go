@@ -39,6 +39,22 @@ func (v *VectorValue) Reset() {
 	v.CurrentIndex = 0
 }
 
+func (v *VectorValue) Copy() value.IVOR {
+
+	internalCopy := make([]value.IVOR, len(v.InternalValue))
+
+	for i, item := range v.InternalValue {
+		internalCopy[i] = item.Copy()
+	}
+
+	return &VectorValue{
+		InternalValue: internalCopy,
+		CurrentIndex:  0,
+		ItemType:      v.ItemType,
+	}
+
+}
+
 var DefaultVectorInternalScope = &BaseScope{
 	name: "vector",
 }

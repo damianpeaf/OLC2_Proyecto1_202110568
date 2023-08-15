@@ -11,3 +11,7 @@ func (d FloatValue) Value() interface{} {
 func (d FloatValue) Type() string {
 	return IVOR_FLOAT
 }
+
+func (d FloatValue) Copy() IVOR {
+	return &FloatValue{d.InternalValue}
+}

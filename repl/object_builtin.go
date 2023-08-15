@@ -21,6 +21,10 @@ func (b ObjectBuiltInFunction) Value() interface{} {
 	return b
 }
 
+func (b ObjectBuiltInFunction) Copy() value.IVOR {
+	return b
+}
+
 func (f *ObjectBuiltInFunction) Exec(visitor *ReplVisitor, args []*Argument, token antlr.Token) {
 
 	context := visitor.GetReplContext()

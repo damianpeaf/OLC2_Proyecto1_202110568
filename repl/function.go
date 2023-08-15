@@ -28,6 +28,10 @@ func (f *Function) Type() string {
 	return value.IVOR_FUNCTION
 }
 
+func (f *Function) Copy() value.IVOR {
+	return f
+}
+
 func (f *Function) Exec(visitor *ReplVisitor, args []*Argument, token antlr.Token) {
 
 	context := visitor.GetReplContext()
@@ -162,9 +166,12 @@ func (f *Function) ValidateReturn(context *ReplContext, val value.IVOR, token an
 	if val.Type() != f.ReturnType {
 		if f.ReturnTypeToken != nil {
 			context.ErrorTable.NewSemanticError(f.ReturnTypeToken, fmt.Sprintf("Tipo de retorno invalido, se esperaba %s, se obtuvo %s", f.ReturnType, val.Type()))
+		} else {
+			context.ErrorTable.NewSemanticError(token, fmt.Sprintf("Tipo de retorno invalido, se esperaba %s, se obtuvo %s", f.ReturnType, val.Type()))
 		}
 
 		f.ReturnValue = value.DefaultNilValue
+		return
 	}
 
 	f.ReturnValue = val
