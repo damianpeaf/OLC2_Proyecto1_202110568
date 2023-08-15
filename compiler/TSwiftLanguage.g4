@@ -109,7 +109,7 @@ func_call: id_pattern LPAREN arg_list? RPAREN # FuncCall;
 
 // external names -> num: value, num2: value2
 arg_list: func_arg (COMMA func_arg)* # ArgList;
-func_arg: (ID COLON)? (ANPERSAND)? expr # FuncArg;
+func_arg: (ID COLON)? (ANPERSAND)? (id_pattern | expr) # FuncArg;
 
 func_dcl:
 	FUNC_KW ID LPAREN param_list? RPAREN (ARROW primitive_type)? LBRACE stmt* RBRACE # FuncDecl;

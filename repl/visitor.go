@@ -967,10 +967,22 @@ func (v *ReplVisitor) VisitFuncArg(ctx *compiler.FuncArgContext) interface{} {
 
 	argName := ""
 	passByReference := false
-	argValue, ok := v.Visit(ctx.Expr()).(value.IVOR)
 
-	if !ok {
-		panic(ctx.Expr().GetText())
+	var argValue value.IVOR = value.DefaultNilValue
+	var argVariableRef *Variable = nil
+
+	if ctx.Id_pattern() != nil {
+		// Because is a reference to a variable, the treatment is a bit different
+		argName = ctx.Id_pattern().GetText()
+		argVariableRef = v.ScopeTrace.GetVariable(argName)
+
+		if argVariableRef != nil {
+			argValue = argVariableRef.Value
+		} else {
+			v.ErrorTable.NewSemanticError(ctx.GetStart(), "Variable "+argName+" no encontrada")
+		}
+	} else {
+		argValue = v.Visit(ctx.Expr()).(value.IVOR)
 	}
 
 	if ctx.ID() != nil {
@@ -986,6 +998,7 @@ func (v *ReplVisitor) VisitFuncArg(ctx *compiler.FuncArgContext) interface{} {
 		Object:          argValue,
 		PassByReference: passByReference,
 		Token:           ctx.GetStart(),
+		VariableRef:     argVariableRef,
 	}
 
 }

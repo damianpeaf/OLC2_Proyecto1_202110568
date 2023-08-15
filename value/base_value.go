@@ -12,6 +12,7 @@ const (
 	IVOR_VECTOR           = "vector"
 	IVOR_OBJECT           = "object"
 	IVOR_ANY              = "any"
+	IVOR_POINTER          = "pointer"
 )
 
 type IVOR interface {

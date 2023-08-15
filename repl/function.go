@@ -49,12 +49,6 @@ func (f *Function) Exec(visitor *ReplVisitor, args []*Argument, token antlr.Toke
 	context.ScopeTrace.CurrentScope = f.DeclScope            // set function declaration scope as current scope
 	context.ScopeTrace.PushScope("func: " + token.GetText()) // push function scope
 
-	// push args to scope
-
-	for varName, arg := range argsMap {
-		context.ScopeTrace.CurrentScope.AddVariable(varName, arg.Object.Type(), arg.Object, false, false, arg.Token)
-	}
-
 	// push return item to callstack
 	funcItem := &CallStackItem{
 		ReturnValue: value.DefaultNilValue,
@@ -85,6 +79,31 @@ func (f *Function) Exec(visitor *ReplVisitor, args []*Argument, token antlr.Toke
 
 		f.ValidateReturn(context, value.DefaultNilValue, token)
 	}()
+
+	// push args to scope
+	for varName, arg := range argsMap {
+
+		// special treatment for pass by reference
+		if arg.PassByReference {
+
+			if arg.VariableRef == nil {
+				context.ErrorTable.NewSemanticError(arg.Token, "No es posible pasar por referencia un valor que no este asociado a una variable")
+				f.ValidateReturn(context, value.DefaultNilValue, token)
+				return
+			}
+
+			// create the pointer
+			pointer := &PointerValue{
+				AssocVariable: arg.VariableRef,
+			}
+
+			// add pointer to scope
+			context.ScopeTrace.CurrentScope.AddVariable(varName, value.IVOR_POINTER, pointer, false, false, arg.Token)
+			continue
+		}
+
+		context.ScopeTrace.CurrentScope.AddVariable(varName, arg.Object.Type(), arg.Object, false, false, arg.Token)
+	}
 
 	// evaluate body
 	for _, stmt := range f.Body {

@@ -100,6 +100,12 @@ func (s *BaseScope) GetVariable(name string) *Variable {
 
 	for {
 		if variable, ok := initialScope.variables[name]; ok {
+
+			// verify if is refering to a pointer
+			if variable.Type == value.IVOR_POINTER {
+				return variable.Value.(*PointerValue).AssocVariable // pointer of a pointer ?
+			}
+
 			return variable
 		}
 
@@ -231,6 +237,7 @@ func NewLocalScope(name string) *BaseScope {
 	return &BaseScope{
 		name:      name,
 		variables: make(map[string]*Variable),
+		functions: make(map[string]value.IVOR),
 		children:  make([]*BaseScope, 0),
 		parent:    nil,
 	}
@@ -284,8 +291,14 @@ func (s *ScopeTrace) Print() {
 	fmt.Println("Global Scope")
 	fmt.Println("============")
 
+	fmt.Println("Variables")
 	for k, v := range s.GlobalScope.variables {
 		fmt.Println(k, v.Value.Value())
+	}
+
+	fmt.Println("Funciones")
+	for k, v := range s.GlobalScope.functions {
+		fmt.Println(k, v)
 	}
 
 	fmt.Println("Child Scopes")
@@ -297,8 +310,14 @@ func (s *ScopeTrace) Print() {
 		fmt.Println(child.name)
 		fmt.Println("============")
 
+		fmt.Println("Variables")
 		for k, v := range child.variables {
 			fmt.Println(k, v.Value.Value())
+		}
+
+		fmt.Println("Funciones")
+		for k, v := range child.functions {
+			fmt.Println(k, v)
 		}
 
 		fmt.Println("")

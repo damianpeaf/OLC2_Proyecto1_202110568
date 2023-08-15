@@ -11,4 +11,5 @@ type Argument struct {
 	Object          value.IVOR
 	PassByReference bool
 	Token           antlr.Token
+	VariableRef     *Variable
 }
