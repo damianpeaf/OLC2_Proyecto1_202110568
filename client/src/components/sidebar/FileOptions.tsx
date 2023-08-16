@@ -41,7 +41,7 @@ export const FileOptions = () => {
 
         const link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
-        link.download = `${currentDocument.name}.tw`;
+        link.download = `${currentDocument.name}.swift`;
         link.click();
 
         window.URL.revokeObjectURL(link.href);
@@ -111,7 +111,7 @@ export const FileOptions = () => {
                             ref={openInputRef}
                             className='invisible'
                             onChange={handleFileChange}
-                            accept='.tw'
+                            accept='.swift'
                             multiple={false}
                         />
                     </form>

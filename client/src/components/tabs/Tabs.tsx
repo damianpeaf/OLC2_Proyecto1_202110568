@@ -63,7 +63,7 @@ const Tab = ({ document, current = false }: TabProps) => {
 
         <BsFileBinaryFill />
         {
-          `${document.name}.tw`
+          `${document.name}.swift`
         }
       </button>
       <button
