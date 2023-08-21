@@ -47,6 +47,14 @@ func (v *BaseTSwiftLanguageVisitor) VisitType(ctx *TypeContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
+func (v *BaseTSwiftLanguageVisitor) VisitMatrix_type(ctx *Matrix_typeContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitAux_matrix_type(ctx *Aux_matrix_typeContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
 func (v *BaseTSwiftLanguageVisitor) VisitDirectAssign(ctx *DirectAssignContext) interface{} {
 	return v.VisitChildren(ctx)
 }

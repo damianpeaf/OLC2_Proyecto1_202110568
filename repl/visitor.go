@@ -119,6 +119,11 @@ func (v *ReplVisitor) VisitValueDecl(ctx *compiler.ValueDeclContext) interface{}
 	varValue := v.Visit(ctx.Expr()).(value.IVOR)
 	varType := varValue.Type()
 
+	if varType == "[]" {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "No se puede inferir el tipo de un vector vacio '"+varName+"'")
+		return nil
+	}
+
 	variable, msg := v.ScopeTrace.AddVariable(varName, varType, varValue, isConst, false, ctx.GetStart())
 
 	// Variable already exists
@@ -152,6 +157,10 @@ func (v *ReplVisitor) VisitVectorItemList(ctx *compiler.VectorItemListContext) i
 
 	var vectorItems []value.IVOR
 
+	if len(ctx.AllExpr()) == 0 {
+		return NewVectorValue(vectorItems, "[]", value.IVOR_ANY)
+	}
+
 	for _, item := range ctx.AllExpr() {
 		vectorItems = append(vectorItems, v.Visit(item).(value.IVOR))
 	}
@@ -163,13 +172,30 @@ func (v *ReplVisitor) VisitVectorItemList(ctx *compiler.VectorItemListContext) i
 
 		for _, item := range vectorItems {
 			if item.Type() != itemType {
-				v.ErrorTable.NewSemanticError(ctx.GetStart(), "Todos los items del vector deben ser del mismo tipo")
+				v.ErrorTable.NewSemanticError(ctx.GetStart(), "Todos los items de la coleccion deben ser del mismo tipo")
 				return value.DefaultNilValue
 			}
 		}
 	}
 
-	return NewVectorValue(vectorItems, "["+itemType+"]", itemType)
+	_type := "[" + itemType + "]"
+
+	if IsVectorType(_type) {
+		return NewVectorValue(vectorItems, _type, itemType)
+	}
+
+	if IsMatrixType(_type) {
+
+		if !value.IsPrimitiveType(RemoveBrackets(_type)) {
+			v.ErrorTable.NewSemanticError(ctx.GetStart(), "Las matrices deben contener unicamente tipos primitivos")
+			return value.DefaultNilValue
+		}
+
+		return NewMatrixValue(vectorItems, _type, itemType)
+	}
+
+	v.ErrorTable.NewSemanticError(ctx.GetStart(), "Tipo "+_type+" no encontrado")
+	return value.DefaultNilValue
 }
 
 func (v *ReplVisitor) VisitType(ctx *compiler.TypeContext) interface{} {
@@ -181,13 +207,26 @@ func (v *ReplVisitor) VisitType(ctx *compiler.TypeContext) interface{} {
 		return _type
 	}
 
-	// TODO: matrix type
 	if IsVectorType(_type) {
 		// remove [ ]
 		internType := RemoveBrackets(_type)
 		if v.ValidType(internType) {
 			return _type
 		}
+
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "El tipo "+internType+" no es valido para un vector")
+		return value.IVOR_NIL
+	}
+
+	if IsMatrixType(_type) {
+		// remove [[]]
+		internType := RemoveBrackets(_type)
+		if value.IsPrimitiveType(internType) {
+			return _type
+		}
+
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Las matrices solo pueden contener tipos primitivos")
+		return value.IVOR_NIL
 	}
 
 	v.ErrorTable.NewSemanticError(ctx.GetStart(), "Tipo "+ctx.GetText()+" no encontrado")
@@ -205,31 +244,80 @@ func (v *ReplVisitor) VisitVectorItem(ctx *compiler.VectorItemContext) interface
 		return nil
 	}
 
-	if !IsVectorType(variable.Type) {
-		v.ErrorTable.NewSemanticError(ctx.GetStart(), "La variable "+varName+" no es un vector")
+	if !(IsVectorType(variable.Type) || IsMatrixType(variable.Type)) {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "La variable "+varName+" no es un vector o una matriz")
 		return nil
 	}
 
-	index := v.Visit(ctx.Expr()).(value.IVOR)
+	structType := value.IVOR_VECTOR
 
-	if index.Type() != value.IVOR_INT {
-		v.ErrorTable.NewSemanticError(ctx.GetStart(), "El indice del vector debe ser un entero")
-		return nil
+	index := v.Visit(ctx.Expr(0)).(value.IVOR)
+
+	if len(ctx.AllExpr()) != 1 {
+		structType = value.IVOR_MATRIX
 	}
 
-	vectorValue := variable.Value.(*VectorValue)
-	indexValue := index.(*value.IntValue).InternalValue
+	indexes := []int{}
 
-	if !vectorValue.ValidIndex(indexValue) {
-		v.ErrorTable.NewSemanticError(ctx.GetStart(), "El indice del vector esta fuera de rango")
-		return nil
+	for _, expr := range ctx.AllExpr() {
+
+		val := v.Visit(expr).(value.IVOR)
+
+		if val.Type() != value.IVOR_INT {
+			v.ErrorTable.NewSemanticError(ctx.GetStart(), "Los indices de acceso deben ser enteros")
+			return nil
+		}
+
+		indexes = append(indexes, val.Value().(int))
 	}
 
-	return &VectorItemReference{
-		Vector: vectorValue,
-		Index:  indexValue,
-		Value:  vectorValue.Get(indexValue),
+	if structType == value.IVOR_VECTOR {
+
+		switch vectorValue := variable.Value.(type) {
+
+		case *VectorValue:
+			indexValue := index.(*value.IntValue).InternalValue
+
+			if !vectorValue.ValidIndex(indexValue) {
+				v.ErrorTable.NewSemanticError(ctx.GetStart(), "El indice del vector esta fuera de rango")
+				return nil
+			}
+
+			return &VectorItemReference{
+				Vector: vectorValue,
+				Index:  indexValue,
+				Value:  vectorValue.Get(indexValue),
+			}
+		default:
+			v.ErrorTable.NewSemanticError(ctx.GetStart(), "La variable "+varName+" no es un vector")
+			return nil
+		}
+
+	} else if structType == value.IVOR_MATRIX {
+
+		switch matrixValue := variable.Value.(type) {
+
+		case *MatrixValue:
+
+			if !matrixValue.ValidIndexes(indexes) {
+				v.ErrorTable.NewSemanticError(ctx.GetStart(), "El indice de la matriz esta fuera de rango")
+				return nil
+			}
+
+			return &MatrixItemReference{
+				Matrix: matrixValue,
+				Index:  indexes,
+				Value:  matrixValue.Get(indexes),
+			}
+		default:
+			v.ErrorTable.NewSemanticError(ctx.GetStart(), "La variable "+varName+" no es una matriz")
+			return nil
+		}
+
+	} else {
+		log.Fatal("Invalid struct type")
 	}
+	return nil
 }
 
 func (v *ReplVisitor) VisitDirectAssign(ctx *compiler.DirectAssignContext) interface{} {
@@ -292,41 +380,73 @@ func (v *ReplVisitor) VisitArithmeticAssign(ctx *compiler.ArithmeticAssignContex
 
 func (v *ReplVisitor) VisitVectorAssign(ctx *compiler.VectorAssignContext) interface{} {
 
-	itemRef, ok := v.Visit(ctx.Vector_item()).(*VectorItemReference)
-
-	if !ok {
-		return nil
-	}
-	leftValue := itemRef.Value
 	rightValue := v.Visit(ctx.Expr()).(value.IVOR)
 
-	// check type
-	if rightValue.Type() != itemRef.Vector.ItemType {
-		v.ErrorTable.NewSemanticError(ctx.GetStart(), "No se puede asignar un valor de tipo "+rightValue.Type()+" a un vector de tipo "+itemRef.Vector.ItemType)
+	switch itemRef := v.Visit(ctx.Vector_item()).(type) {
+	case *VectorItemReference:
+
+		leftValue := itemRef.Value
+
+		// check type, todo: improve cast
+		if rightValue.Type() != itemRef.Vector.ItemType {
+			v.ErrorTable.NewSemanticError(ctx.GetStart(), "No se puede asignar un valor de tipo "+rightValue.Type()+" a un vector de tipo "+itemRef.Vector.ItemType)
+			return nil
+		}
+		op := string(ctx.GetOp().GetText()[0])
+
+		if op == "=" {
+			itemRef.Vector.InternalValue[itemRef.Index] = rightValue
+			return nil
+		}
+
+		strat, ok := BinaryStrats[op]
+
+		if !ok {
+			log.Fatal("Binary operator not found")
+		}
+
+		ok, msg, varValue := strat.Validate(leftValue, rightValue)
+
+		if !ok {
+			v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
+			return nil
+		}
+
+		itemRef.Vector.InternalValue[itemRef.Index] = varValue
+
+		return nil
+	case *MatrixItemReference:
+		leftValue := itemRef.Value
+
+		// check type, todo: improve cast
+		if rightValue.Type() != RemoveBrackets(itemRef.Matrix.Type()) {
+			v.ErrorTable.NewSemanticError(ctx.GetStart(), "No se puede asignar un valor de tipo "+rightValue.Type()+" a una matriz de tipo "+RemoveBrackets(itemRef.Matrix.Type()))
+			return nil
+		}
+
+		op := string(ctx.GetOp().GetText()[0])
+
+		if op == "=" {
+			itemRef.Matrix.Set(itemRef.Index, rightValue)
+			return nil
+		}
+
+		strat, ok := BinaryStrats[op]
+
+		if !ok {
+			log.Fatal("Binary operator not found")
+		}
+
+		ok, msg, varValue := strat.Validate(leftValue, rightValue)
+
+		if !ok {
+			v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
+			return nil
+		}
+
+		itemRef.Matrix.Set(itemRef.Index, varValue)
 		return nil
 	}
-
-	op := string(ctx.GetOp().GetText()[0])
-
-	if op == "=" {
-		itemRef.Vector.InternalValue[itemRef.Index] = rightValue
-		return nil
-	}
-
-	strat, ok := BinaryStrats[op]
-
-	if !ok {
-		log.Fatal("Binary operator not found")
-	}
-
-	ok, msg, varValue := strat.Validate(leftValue, rightValue)
-
-	if !ok {
-		v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
-		return nil
-	}
-
-	itemRef.Vector.InternalValue[itemRef.Index] = varValue
 
 	return nil
 }
@@ -419,13 +539,13 @@ func (v *ReplVisitor) VisitParenExp(ctx *compiler.ParenExpContext) interface{} {
 
 func (v *ReplVisitor) VisitVectorItemExp(ctx *compiler.VectorItemExpContext) interface{} {
 
-	itemRef, ok := v.Visit(ctx.Vector_item()).(*VectorItemReference)
-
-	if !ok {
-		return nil
+	switch itemRef := v.Visit(ctx.Vector_item()).(type) {
+	case *VectorItemReference:
+		return itemRef.Value
+	case *MatrixItemReference:
+		return itemRef.Value
 	}
-
-	return itemRef.Value
+	return value.DefaultNilValue
 }
 
 func (v *ReplVisitor) VisitFuncCallExp(ctx *compiler.FuncCallExpContext) interface{} {
@@ -449,7 +569,8 @@ func (v *ReplVisitor) VisitUnaryExp(ctx *compiler.UnaryExpContext) interface{} {
 	ok, msg, result := strat.Validate(exp)
 
 	if !ok {
-		log.Fatal(msg)
+		v.ErrorTable.NewSemanticError(ctx.GetOp(), msg)
+		return value.DefaultNilValue
 	}
 
 	return result
@@ -771,12 +892,11 @@ func (v *ReplVisitor) VisitForStmt(ctx *compiler.ForStmtContext) interface{} {
 
 func (v *ReplVisitor) VisitInnerFor(ctx *compiler.ForStmtContext, outerForScope *BaseScope, innerForScope *BaseScope, forItem *CallStackItem, iterableItem *VectorValue, iterableVariable *Variable) {
 
-	// reset scope
-	innerForScope.Reset()
-
 	// handle break and continue statements from call stack
 	defer func() {
 
+		// reset scope
+		innerForScope.Reset()
 		if item, ok := recover().(*CallStackItem); item != nil && ok {
 
 			// Not a for item, propagate panic
@@ -810,6 +930,7 @@ func (v *ReplVisitor) VisitInnerFor(ctx *compiler.ForStmtContext, outerForScope 
 		}
 
 		iterableItem.Next()
+		innerForScope.Reset()
 	}
 }
 

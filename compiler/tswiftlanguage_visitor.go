@@ -37,6 +37,12 @@ type TSwiftLanguageVisitor interface {
 	// Visit a parse tree produced by TSwiftLanguage#type.
 	VisitType(ctx *TypeContext) interface{}
 
+	// Visit a parse tree produced by TSwiftLanguage#matrix_type.
+	VisitMatrix_type(ctx *Matrix_typeContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#aux_matrix_type.
+	VisitAux_matrix_type(ctx *Aux_matrix_typeContext) interface{}
+
 	// Visit a parse tree produced by TSwiftLanguage#DirectAssign.
 	VisitDirectAssign(ctx *DirectAssignContext) interface{}
 

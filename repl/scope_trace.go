@@ -335,7 +335,7 @@ func (s *ScopeTrace) Print() {
 
 	fmt.Println("Variables")
 	for k, v := range s.GlobalScope.variables {
-		fmt.Println(k, v.Value.Value())
+		fmt.Println(k, v.Value.Value(), v.Type)
 	}
 
 	fmt.Println("Funciones")

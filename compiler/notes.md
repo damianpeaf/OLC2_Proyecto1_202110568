@@ -51,3 +51,31 @@
 
 # Notes
 stackable elements: switch, while, for, function
+
+
+
+
+# Matrix Grammar Of Python
+list:
+    | '[' [star_named_expressions] ']' 
+
+
+// Match one or more occurrences of e, separated by s. The generated parse tree does not include the separator. This is otherwise identical to (e (s e)*).
+star_named_expressions: ','.star_named_expression+ [','] 
+
+star_named_expression:
+    | '*' bitwise_or 
+    | named_expression
+
+named_expression:
+    | assignment_expression
+    | expression !':=' ->list
+
+--- java ---
+
+ElementValueArrayInitializer:
+    { [ElementValues] [,] }
+
+ElementValues:
+    ElementValue { , ElementValue }
+

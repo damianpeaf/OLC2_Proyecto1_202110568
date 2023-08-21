@@ -75,10 +75,6 @@ func (v *VectorValue) updateProps() {
 
 }
 
-var DefaultVectorInternalScope = &BaseScope{
-	name: "vector",
-}
-
 func NewVectorValue(vectorItems []value.IVOR, fullType, itemType string) *VectorValue {
 	vector := &VectorValue{
 		InternalValue: vectorItems,

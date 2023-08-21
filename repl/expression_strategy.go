@@ -642,6 +642,10 @@ type UnaryStrategy struct {
 
 func (s *UnaryStrategy) Validate(val value.IVOR) (bool, string, value.IVOR) {
 
+	if val.Type() == value.IVOR_NIL {
+		return false, "No es posible realizar operaciones con valores nulos", value.DefaultNilValue
+	}
+
 	for _, valid := range s.Validations {
 
 		if valid.Type == val.Type() {

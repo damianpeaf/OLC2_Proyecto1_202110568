@@ -27,13 +27,18 @@ decl_stmt:
 	| var_type ID EQUALS expr				# ValueDecl
 	| var_type ID COLON type INTERROGATION	# TypeDecl;
 
-vector_expr: LBRACK expr (COMMA expr)* RBRACK # VectorItemList;
+vector_expr:
+	LBRACK (expr (COMMA expr)*)? RBRACK # VectorItemList;
 
-vector_item: id_pattern LBRACK expr RBRACK # VectorItem;
+vector_item: id_pattern (LBRACK expr RBRACK)+ # VectorItem;
 
 var_type: VAR_KW | LET_KW;
 
-type: ID | LBRACK ID RBRACK;
+type: ID | LBRACK ID RBRACK | matrix_type;
+
+matrix_type: aux_matrix_type | LBRACK LBRACK ID RBRACK RBRACK;
+
+aux_matrix_type: LBRACK matrix_type RBRACK;
 
 assign_stmt:
 	id_pattern EQUALS expr											# DirectAssign

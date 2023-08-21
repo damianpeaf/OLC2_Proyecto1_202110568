@@ -10,6 +10,7 @@ func TestIsVector(t *testing.T) {
 		"[int]":   true,
 		"int":     false,
 		"[[int]]": false,
+		"[]":      true,
 	}
 
 	for k, v := range matrix {
@@ -18,4 +19,22 @@ func TestIsVector(t *testing.T) {
 		}
 	}
 
+}
+
+func TestIsMatrix(t *testing.T) {
+	matrix := map[string]bool{
+		"[int]":     false,
+		"int":       false,
+		"[[int]]":   true,
+		"[]":        false,
+		"[[[int]]]": true,
+		"[":         false,
+		"[[]":       false,
+	}
+
+	for k, v := range matrix {
+		if IsMatrixType(k) != v {
+			t.Errorf("isMatrix(%s) != %t", k, v)
+		}
+	}
 }

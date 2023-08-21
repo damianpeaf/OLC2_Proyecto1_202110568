@@ -13,6 +13,7 @@ const (
 	IVOR_OBJECT           = "object"
 	IVOR_ANY              = "any"
 	IVOR_POINTER          = "pointer"
+	IVOR_MATRIX           = "matrix"
 )
 
 // IVOR stands for Internal Value Object Representation

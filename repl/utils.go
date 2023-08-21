@@ -37,3 +37,13 @@ func IsVectorType(_type string) bool {
 func RemoveBrackets(s string) string {
 	return strings.Trim(s, "[]")
 }
+
+func IsMatrixType(_type string) bool {
+
+	// Matrix starts with AT LEAST two [[ and ends with at least two ]]
+	matrixPattern := "^\\[\\[.*\\]\\](\\[.*\\]\\])*$"
+
+	match, _ := regexp.MatchString(matrixPattern, _type)
+
+	return match
+}
