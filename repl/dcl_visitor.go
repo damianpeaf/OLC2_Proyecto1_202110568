@@ -136,7 +136,6 @@ func (v *DclVisitor) VisitFuncParam(ctx *compiler.FuncParamContext) interface{} 
 		passByReference = true
 	}
 
-	// todo: Change primitive type to a more general type
 	paramType := ctx.Type_().GetText()
 
 	return &Param{

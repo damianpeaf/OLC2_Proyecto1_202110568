@@ -39,11 +39,19 @@ func (v *BaseTSwiftLanguageVisitor) VisitVectorItem(ctx *VectorItemContext) inte
 	return v.VisitChildren(ctx)
 }
 
+func (v *BaseTSwiftLanguageVisitor) VisitRepeating(ctx *RepeatingContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
 func (v *BaseTSwiftLanguageVisitor) VisitVar_type(ctx *Var_typeContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
 func (v *BaseTSwiftLanguageVisitor) VisitType(ctx *TypeContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitVector_type(ctx *Vector_typeContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
@@ -96,6 +104,10 @@ func (v *BaseTSwiftLanguageVisitor) VisitLiteralExp(ctx *LiteralExpContext) inte
 }
 
 func (v *BaseTSwiftLanguageVisitor) VisitIdExp(ctx *IdExpContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitRepeatingExp(ctx *RepeatingExpContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 

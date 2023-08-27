@@ -100,6 +100,7 @@ func (v *ReplVisitor) VisitTypeValueDecl(ctx *compiler.TypeValueDeclContext) int
 	isConst := isDeclConst(ctx.Var_type().GetText())
 	varName := ctx.ID().GetText()
 	varType := v.Visit(ctx.Type_()).(string)
+	fmt.Print("EVALUAO: " + ctx.Expr().GetText())
 	varValue := v.Visit(ctx.Expr()).(value.IVOR)
 
 	variable, msg := v.ScopeTrace.AddVariable(varName, varType, varValue, isConst, false, ctx.GetStart())
@@ -231,6 +232,83 @@ func (v *ReplVisitor) VisitType(ctx *compiler.TypeContext) interface{} {
 
 	v.ErrorTable.NewSemanticError(ctx.GetStart(), "Tipo "+ctx.GetText()+" no encontrado")
 	return value.IVOR_NIL
+}
+
+func (v *ReplVisitor) VisitVector_type(ctx *compiler.Vector_typeContext) interface{} {
+	return ctx.GetText()
+}
+
+func (v *ReplVisitor) VisitRepeating(ctx *compiler.RepeatingContext) interface{} {
+
+	if ctx.ID(0).GetText() != "repeating" {
+		v.ErrorTable.NewSemanticError(ctx.ID(0).GetSymbol(), "La sintaxis de la función espera el parametro 'repeating'")
+		return value.DefaultNilValue
+	}
+
+	if ctx.ID(1).GetText() != "count" {
+		v.ErrorTable.NewSemanticError(ctx.ID(1).GetSymbol(), "La sintaxis de la función espera el parametro 'count'")
+		return value.DefaultNilValue
+	}
+
+	reapeating_val := v.Visit(ctx.Expr(0)).(value.IVOR)
+	count_val := v.Visit(ctx.Expr(1)).(value.IVOR)
+
+	count, validCount := count_val.(*value.IntValue)
+	if !validCount {
+		v.ErrorTable.NewSemanticError(ctx.Expr(1).GetStart(), "El parametro count debe ser un entero")
+		return value.DefaultNilValue
+	}
+
+	if ctx.Vector_type() != nil {
+		vector_type := ctx.Vector_type().GetText()
+		primitive_type := RemoveBrackets(vector_type)
+
+		if primitive_type != reapeating_val.Type() {
+			v.ErrorTable.NewSemanticError(ctx.Expr(0).GetStart(), "El tipo del valor repetido debe ser "+primitive_type)
+			return value.DefaultNilValue
+		}
+
+		var vectorItems []value.IVOR
+
+		for i := 0; i < count.InternalValue; i++ {
+			vectorItems = append(vectorItems, reapeating_val.Copy()) // ? indepedent values
+		}
+
+		return NewVectorValue(vectorItems, vector_type, primitive_type)
+
+	} else if ctx.Matrix_type() != nil {
+
+		matrix_type := ctx.Matrix_type().GetText()
+
+		if !(IsMatrixType(reapeating_val.Type()) || IsVectorType(reapeating_val.Type())) {
+			v.ErrorTable.NewSemanticError(ctx.Expr(0).GetStart(), "Para crear una matriz con valores repetidos, el valor debe ser un vector o una matriz, se obtuvo '"+reapeating_val.Type()+"'")
+			return value.DefaultNilValue
+		}
+
+		if !value.IsPrimitiveType(RemoveBrackets(matrix_type)) {
+			v.ErrorTable.NewSemanticError(ctx.Expr(0).GetStart(), "Las matrices solo pueden contener tipos primitivos")
+			return value.DefaultNilValue
+		}
+
+		// must be a lower order collection
+		if matrix_type != "["+reapeating_val.Type()+"]" {
+			v.ErrorTable.NewSemanticError(ctx.Expr(0).GetStart(), "Para conseguir un valor de tipo '"+matrix_type+"' no es posible contruirlo con un valores repetidos del tipo '"+reapeating_val.Type()+"'")
+			return value.DefaultNilValue
+		}
+
+		var matrixItems []value.IVOR
+
+		for i := 0; i < count.InternalValue; i++ {
+			matrixItems = append(matrixItems, reapeating_val.Copy()) // ? indepedent values
+		}
+
+		return NewMatrixValue(matrixItems, matrix_type, RemoveBrackets(reapeating_val.Type()))
+	}
+	return value.DefaultNilValue
+}
+
+func (v *ReplVisitor) VisitRepeatingExp(ctx *compiler.RepeatingExpContext) interface{} {
+	return v.Visit(ctx.Repeating())
 }
 
 func (v *ReplVisitor) VisitVectorItem(ctx *compiler.VectorItemContext) interface{} {
@@ -1226,7 +1304,6 @@ func (v *ReplVisitor) VisitFuncParam(ctx *compiler.FuncParamContext) interface{}
 		passByReference = true
 	}
 
-	// todo: Change primitive type to a more general type
 	paramType := v.Visit(ctx.Type_()).(string)
 
 	return &Param{

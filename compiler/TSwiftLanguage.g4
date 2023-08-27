@@ -32,9 +32,14 @@ vector_expr:
 
 vector_item: id_pattern (LBRACK expr RBRACK)+ # VectorItem;
 
+repeating:
+	(vector_type | matrix_type) LPAREN ID COLON expr COMMA ID COLON expr RPAREN;
+
 var_type: VAR_KW | LET_KW;
 
-type: ID | LBRACK ID RBRACK | matrix_type;
+type: ID | vector_type | matrix_type;
+
+vector_type: LBRACK ID RBRACK;
 
 matrix_type: aux_matrix_type | LBRACK LBRACK ID RBRACK RBRACK;
 
@@ -61,6 +66,7 @@ expr:
 	| vector_item										# VectorItemExp // a.a.a[0]
 	| literal											# LiteralExp // 1, 1.0, "a", true, nil
 	| vector_expr										# VectorExp // [1, 2, 3]
+	| repeating											# RepeatingExp // [ Int ] (repeating: 0, count: 3)
 	| op = (NOT | MINUS) expr							# UnaryExp // !a, -a	
 	| left = expr op = (MULT | DIV | MOD) right = expr	# BinaryExp // a * b, a / b, a % b
 	| left = expr op = (PLUS | MINUS) right = expr		# BinaryExp // a + b, a - b
