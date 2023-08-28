@@ -13,11 +13,16 @@ type Variable struct {
 	IsConst  bool
 	AllowNil bool
 	Token    antlr.Token
+	isProp   bool
 }
 
 func (v *Variable) TypeValidation() (bool, string) {
 
-	if v.Value.Type() == value.IVOR_NIL && v.AllowNil {
+	if v.Value == value.DefaultUnInitializedValue {
+		return true, ""
+	}
+
+	if v.Value == value.DefaultNilValue && v.AllowNil {
 		return true, ""
 	}
 
@@ -75,13 +80,23 @@ func (v *Variable) TypeValidation() (bool, string) {
 	return true, ""
 }
 
-func (v *Variable) Assign(val value.IVOR) (bool, string) {
+func (v *Variable) Assign(val value.IVOR, isMutatingContext bool) (bool, string) {
 
 	if v.IsConst {
 		return false, "No se puede asignar un valor a una constante"
 	}
 
+	if v.isProp {
+		if !isMutatingContext {
+			return false, "No se puede asignar un valor a una propiedad desde un contexto de función no mutable"
+		}
+	}
+
 	v.Value = val
+
+	if obj, ok := val.(*ObjectValue); ok {
+		v.Value = obj.Copy()
+	}
 
 	return v.TypeValidation()
 }

@@ -32,6 +32,7 @@ CONTINUE_KW: 'continue';
 RETURN_KW: 'return';
 GUARD_KW: 'guard';
 INOUT_KW: 'inout';
+MUTATING_KW: 'mutating';
 
 // ...
 IN_KW: 'in';

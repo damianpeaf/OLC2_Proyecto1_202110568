@@ -12,19 +12,20 @@ import (
 
 type ReplVisitor struct {
 	compiler.BaseTSwiftLanguageVisitor
-	ScopeTrace *ScopeTrace
-	CallStack  *CallStack
-	Console    *Console
-	ErrorTable *ErrorTable
-	DclScan    bool
+	ScopeTrace  *ScopeTrace
+	CallStack   *CallStack
+	Console     *Console
+	ErrorTable  *ErrorTable
+	StructNames []string
 }
 
 func NewVisitor(dclVisitor *DclVisitor) *ReplVisitor {
 	return &ReplVisitor{
-		ScopeTrace: dclVisitor.ScopeTrace,
-		ErrorTable: dclVisitor.ErrorTable,
-		CallStack:  NewCallStack(),
-		Console:    NewConsole(),
+		ScopeTrace:  dclVisitor.ScopeTrace,
+		ErrorTable:  dclVisitor.ErrorTable,
+		StructNames: dclVisitor.StructNames,
+		CallStack:   NewCallStack(),
+		Console:     NewConsole(),
 	}
 }
 
@@ -84,6 +85,8 @@ func (v *ReplVisitor) VisitStmt(ctx *compiler.StmtContext) interface{} {
 		v.Visit(ctx.Func_call())
 	} else if ctx.Func_dcl() != nil {
 		v.Visit(ctx.Func_dcl())
+	} else if ctx.Strct_dcl() != nil {
+		v.Visit(ctx.Strct_dcl())
 	} else {
 		log.Fatal("Statement not found")
 	}
@@ -100,8 +103,12 @@ func (v *ReplVisitor) VisitTypeValueDecl(ctx *compiler.TypeValueDeclContext) int
 	isConst := isDeclConst(ctx.Var_type().GetText())
 	varName := ctx.ID().GetText()
 	varType := v.Visit(ctx.Type_()).(string)
-	fmt.Print("EVALUAO: " + ctx.Expr().GetText())
 	varValue := v.Visit(ctx.Expr()).(value.IVOR)
+
+	// copy object
+	if obj, ok := varValue.(*ObjectValue); ok {
+		varValue = obj.Copy()
+	}
 
 	variable, msg := v.ScopeTrace.AddVariable(varName, varType, varValue, isConst, false, ctx.GetStart())
 
@@ -123,6 +130,11 @@ func (v *ReplVisitor) VisitValueDecl(ctx *compiler.ValueDeclContext) interface{}
 	if varType == "[]" {
 		v.ErrorTable.NewSemanticError(ctx.GetStart(), "No se puede inferir el tipo de un vector vacio '"+varName+"'")
 		return nil
+	}
+
+	// copy object
+	if obj, ok := varValue.(*ObjectValue); ok {
+		varValue = obj.Copy()
 	}
 
 	variable, msg := v.ScopeTrace.AddVariable(varName, varType, varValue, isConst, false, ctx.GetStart())
@@ -408,7 +420,14 @@ func (v *ReplVisitor) VisitDirectAssign(ctx *compiler.DirectAssignContext) inter
 	if variable == nil {
 		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Variable "+varName+" no encontrada")
 	} else {
-		ok, msg := variable.Assign(varValue)
+
+		canMutate := true
+
+		if v.ScopeTrace.CurrentScope.isStruct {
+			canMutate = v.ScopeTrace.CurrentScope.IsMutating
+		}
+
+		ok, msg := variable.Assign(varValue, canMutate)
 
 		if !ok {
 			v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
@@ -446,7 +465,13 @@ func (v *ReplVisitor) VisitArithmeticAssign(ctx *compiler.ArithmeticAssignContex
 			return nil
 		}
 
-		ok, msg = variable.Assign(varValue)
+		canMutate := true
+
+		if v.ScopeTrace.CurrentScope.isStruct {
+			canMutate = v.ScopeTrace.CurrentScope.IsMutating
+		}
+
+		ok, msg = variable.Assign(varValue, canMutate)
 
 		if !ok {
 			v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
@@ -674,6 +699,10 @@ func (v *ReplVisitor) VisitBinaryExp(ctx *compiler.BinaryExpContext) interface{}
 	}
 
 	return result
+}
+
+func (v *ReplVisitor) VisitStructInstanceExp(ctx *compiler.StructInstanceExpContext) interface{} {
+	return v.Visit(ctx.Struct_instance())
 }
 
 func (v *ReplVisitor) VisitIfStmt(ctx *compiler.IfStmtContext) interface{} {
@@ -1217,13 +1246,12 @@ func (v *ReplVisitor) VisitFuncArg(ctx *compiler.FuncArgContext) interface{} {
 func (v *ReplVisitor) VisitFuncDecl(ctx *compiler.FuncDeclContext) interface{} {
 
 	if v.ScopeTrace.CurrentScope == v.ScopeTrace.GlobalScope {
-		// Already check by dcl visitor
+		// aready declared by dcl_visitor
 		return nil
 	}
 
-	// TODO: supoort for structs functions
-	if v.ScopeTrace.CurrentScope != v.ScopeTrace.GlobalScope {
-		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Las funciones solo pueden ser declaradas en el scope global")
+	if v.ScopeTrace.CurrentScope != v.ScopeTrace.GlobalScope && !v.ScopeTrace.CurrentScope.isStruct {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Las funciones solo pueden ser declaradas en el scope global o en un struct")
 	}
 
 	funcName := ctx.ID().GetText()
@@ -1265,9 +1293,14 @@ func (v *ReplVisitor) VisitFuncDecl(ctx *compiler.FuncDeclContext) interface{} {
 		ReturnTypeToken: returnTypeToken,
 	}
 
-	v.ScopeTrace.AddFunction(funcName, function)
+	ok, msg := v.ScopeTrace.AddFunction(funcName, function)
 
-	return nil
+	if !ok {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
+		return nil
+	}
+
+	return function
 }
 
 func (v *ReplVisitor) VisitParamList(ctx *compiler.ParamListContext) interface{} {
@@ -1314,4 +1347,127 @@ func (v *ReplVisitor) VisitFuncParam(ctx *compiler.FuncParamContext) interface{}
 		Token:           ctx.GetStart(),
 	}
 
+}
+
+// * Structs
+
+func (v *ReplVisitor) VisitStructDecl(ctx *compiler.StructDeclContext) interface{} {
+	if v.ScopeTrace.CurrentScope != v.ScopeTrace.GlobalScope {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Los structs solo pueden ser declaradas en el scope global")
+		return nil
+	}
+
+	structAdded, msg := v.ScopeTrace.GlobalScope.AddStruct(ctx.ID().GetText(), &Struct{
+		Name:   ctx.ID().GetText(),
+		Fields: ctx.AllStruct_prop(),
+	})
+
+	if !structAdded {
+		v.ErrorTable.NewSemanticError(ctx.ID().GetSymbol(), msg)
+	}
+
+	return nil
+}
+
+func (v *ReplVisitor) VisitStructAttr(ctx *compiler.StructAttrContext) interface{} {
+
+	if ctx.Type_() != nil && ctx.Expr() != nil {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Los atributos de un struct deben ser declarados con un tipo o con un valor")
+		return nil
+	}
+
+	isConst := isDeclConst(ctx.Var_type().GetText())
+	varName := ctx.ID().GetText()
+	var varValue value.IVOR = value.DefaultUnInitializedValue
+	explicitType := ""
+	implicitType := ""
+	finalType := ""
+
+	// value is defined
+	if ctx.Expr() != nil {
+		varValue = v.Visit(ctx.Expr()).(value.IVOR)
+		implicitType = varValue.Type()
+	}
+
+	if ctx.Type_() != nil {
+		explicitType = v.Visit(ctx.Type_()).(string)
+	}
+
+	// explicit type and implicit type are defined
+	if explicitType != "" && implicitType != "" {
+		if explicitType != implicitType {
+			v.ErrorTable.NewSemanticError(ctx.GetStart(), "El tipo explicito y el tipo implicito no coinciden")
+			return nil
+		}
+	}
+
+	// only explicit type is defined
+	if explicitType != "" && implicitType == "" {
+		finalType = explicitType
+	} else {
+		// only implicit type is defined
+		finalType = implicitType
+	}
+
+	variable, msg := v.ScopeTrace.AddVariable(varName, finalType, varValue, isConst, false, ctx.ID().GetSymbol())
+
+	if variable == nil {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
+	}
+
+	return nil
+}
+
+func (v *ReplVisitor) VisitStructFunc(ctx *compiler.StructFuncContext) interface{} {
+
+	funcDcl := v.Visit(ctx.Func_dcl())
+
+	if ctx.MUTATING_KW() != nil {
+		structFunc, ok := funcDcl.(*Function)
+
+		if !ok {
+			fmt.Println("IS MUTATING2!!!")
+			return nil
+		}
+		structFunc.IsMutating = true
+	}
+
+	return nil
+}
+
+func (v *ReplVisitor) VisitStructInstance(ctx *compiler.StructInstanceContext) interface{} {
+
+	targetStruct := ctx.ID().GetText()
+	structArgs := make([]*StructArg, 0)
+
+	if ctx.Struct_instance_arg_list() != nil {
+		structArgs = v.Visit(ctx.Struct_instance_arg_list()).([]*StructArg)
+	}
+
+	return NewObjectValue(v, targetStruct, ctx.ID().GetSymbol(), structArgs, false)
+
+}
+
+func (v *ReplVisitor) VisitStructInstanceArgList(ctx *compiler.StructInstanceArgListContext) interface{} {
+
+	args := make([]*StructArg, 0)
+
+	for _, arg := range ctx.AllStruct_instance_arg() {
+		args = append(args, v.Visit(arg).(*StructArg))
+	}
+
+	return args
+}
+
+func (v *ReplVisitor) VisitStructInstanceArg(ctx *compiler.StructInstanceArgContext) interface{} {
+	return &StructArg{
+		Name:  ctx.ID().GetText(),
+		Value: v.Visit(ctx.Expr()).(value.IVOR),
+		Token: ctx.ID().GetSymbol(),
+	}
+}
+
+func (v *ReplVisitor) VisitStructVector(ctx *compiler.StructVectorContext) interface{} {
+	// TODO: struct vector
+	return nil
 }

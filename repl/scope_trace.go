@@ -10,11 +10,14 @@ import (
 )
 
 type BaseScope struct {
-	name      string
-	parent    *BaseScope
-	children  []*BaseScope
-	variables map[string]*Variable
-	functions map[string]value.IVOR
+	name       string
+	parent     *BaseScope
+	children   []*BaseScope
+	variables  map[string]*Variable
+	functions  map[string]value.IVOR
+	structs    map[string]*Struct
+	isStruct   bool
+	IsMutating bool
 }
 
 func (s *BaseScope) Name() string {
@@ -30,8 +33,10 @@ func (s *BaseScope) Children() []*BaseScope {
 }
 
 func (s *BaseScope) ValidType(_type string) bool {
-	// TODO: implement struct type validation
-	return value.IsPrimitiveType(_type)
+
+	_, isStructType := s.structs[_type]
+
+	return value.IsPrimitiveType(_type) || isStructType
 }
 
 func (s *BaseScope) AddChild(child *BaseScope) {
@@ -135,19 +140,20 @@ func (s *BaseScope) searchObjectVariable(name string, lastObj value.IVOR) *Varia
 		variable := s.GetVariable(parts[0])
 
 		if variable == nil {
+			fmt.Println("sexo")
 			return nil
 		}
 
 		obj := variable.Value
 
 		// obj must be an object/struct or vector
-
 		switch obj := obj.(type) {
 		case *ObjectValue:
 			lastObj = obj
 		case *VectorValue:
 			lastObj = obj.ObjectValue
 		default:
+			fmt.Println("xd")
 			return nil
 		}
 
@@ -166,8 +172,16 @@ func (s *BaseScope) searchObjectVariable(name string, lastObj value.IVOR) *Varia
 	}
 }
 
-func (s *BaseScope) AddFunction(name string, function value.IVOR) {
+func (s *BaseScope) AddFunction(name string, function value.IVOR) (bool, string) {
+	// check if function already exists
+
+	if _, ok := s.functions[name]; ok {
+		return false, "La funcion " + name + " ya existe"
+	}
+
 	s.functions[name] = function
+
+	return true, ""
 }
 
 func (s *BaseScope) GetFunction(name string) (value.IVOR, string) {
@@ -254,6 +268,35 @@ func (s *BaseScope) searchObjectFunction(name string, lastObj value.IVOR) (value
 	}
 }
 
+func (s *BaseScope) AddStruct(name string, structValue *Struct) (bool, string) {
+
+	if _, ok := s.structs[name]; ok {
+		return false, "La estructura " + name + " ya existe"
+	}
+
+	s.structs[name] = structValue
+	return true, ""
+}
+
+func (s *BaseScope) GetStruct(name string) (*Struct, string) {
+
+	initialScope := s
+
+	for {
+		if structValue, ok := initialScope.structs[name]; ok {
+			return structValue, ""
+		}
+
+		if initialScope.parent == nil {
+			break
+		}
+
+		initialScope = initialScope.parent
+	}
+
+	return nil, "La estructura " + name + " no existe"
+}
+
 func (s *BaseScope) Reset() {
 	s.variables = make(map[string]*Variable)
 	s.children = make([]*BaseScope, 0)
@@ -274,6 +317,7 @@ func NewGlobalScope() *BaseScope {
 		name:      "global",
 		variables: make(map[string]*Variable),
 		children:  make([]*BaseScope, 0),
+		structs:   make(map[string]*Struct),
 		parent:    nil,
 		functions: funcs,
 	}
@@ -320,8 +364,8 @@ func (s *ScopeTrace) GetVariable(name string) *Variable {
 	return s.CurrentScope.GetVariable(name)
 }
 
-func (s *ScopeTrace) AddFunction(name string, function value.IVOR) {
-	s.CurrentScope.AddFunction(name, function)
+func (s *ScopeTrace) AddFunction(name string, function value.IVOR) (bool, string) {
+	return s.CurrentScope.AddFunction(name, function)
 }
 
 func (s *ScopeTrace) GetFunction(name string) (value.IVOR, string) {
@@ -387,4 +431,19 @@ func NewVectorScope() *BaseScope {
 	// register object built-in functions
 
 	return scope
+}
+
+func NewStructScope() *BaseScope {
+
+	newGlobal := NewGlobalScope()
+
+	return &BaseScope{
+		name:      "struct",
+		variables: make(map[string]*Variable),
+		children:  make([]*BaseScope, 0),
+		functions: make(map[string]value.IVOR),
+		structs:   make(map[string]*Struct),
+		parent:    newGlobal,
+		isStruct:  true,
+	}
 }

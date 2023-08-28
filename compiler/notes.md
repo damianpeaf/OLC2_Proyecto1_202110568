@@ -18,7 +18,12 @@
     6.1. Check inner, outer, and positional args. ✅
     6.2. Reference IVOR ✅
 7. Vectors
-    7.1 empty [] implicit case 🕐
+    7.1 empty [] implicit case ✅
+8. Structs
+    8.1. Dcl visit 🕐
+    8.2. Pointers of structs 🕐
+    8.3. Reuse func grammar 🕐
+    
 
 # Next Steps
 1. if stmt              ✅

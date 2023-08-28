@@ -10,14 +10,16 @@ import (
 
 type DclVisitor struct {
 	compiler.BaseTSwiftLanguageVisitor
-	ScopeTrace *ScopeTrace
-	ErrorTable *ErrorTable
+	ScopeTrace  *ScopeTrace
+	ErrorTable  *ErrorTable
+	StructNames []string
 }
 
 func NewDclVisitor() *DclVisitor {
 	return &DclVisitor{
-		ScopeTrace: NewScopeTrace(),
-		ErrorTable: NewErrorTable(),
+		ScopeTrace:  NewScopeTrace(),
+		ErrorTable:  NewErrorTable(),
+		StructNames: []string{},
 	}
 }
 
@@ -46,6 +48,8 @@ func (v *DclVisitor) VisitStmt(ctx *compiler.StmtContext) interface{} {
 
 	if ctx.Func_dcl() != nil {
 		v.Visit(ctx.Func_dcl())
+	} else if ctx.Strct_dcl() != nil {
+		v.Visit(ctx.Strct_dcl())
 	}
 
 	return nil
@@ -97,7 +101,11 @@ func (v *DclVisitor) VisitFuncDecl(ctx *compiler.FuncDeclContext) interface{} {
 		ReturnTypeToken: returnTypeToken,
 	}
 
-	v.ScopeTrace.AddFunction(funcName, function)
+	ok, msg := v.ScopeTrace.AddFunction(funcName, function)
+
+	if !ok {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
+	}
 
 	return nil
 }
@@ -146,4 +154,9 @@ func (v *DclVisitor) VisitFuncParam(ctx *compiler.FuncParamContext) interface{} 
 		Token:           ctx.GetStart(),
 	}
 
+}
+
+func (v *DclVisitor) VisitStructDecl(ctx *compiler.StructDeclContext) interface{} {
+	v.StructNames = append(v.StructNames, ctx.ID().GetText())
+	return nil
 }

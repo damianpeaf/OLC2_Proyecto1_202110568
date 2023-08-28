@@ -17,7 +17,8 @@ type Function struct {
 	Body            []compiler.IStmtContext
 	DeclScope       *BaseScope
 	ReturnValue     value.IVOR
-	// TODO: suport for structs, mutator, self, etc
+	IsMutating      bool
+	DefaultScope    *BaseScope
 }
 
 func (f *Function) Value() interface{} {
@@ -45,9 +46,21 @@ func (f *Function) Exec(visitor *ReplVisitor, args []*Argument, token antlr.Toke
 	}
 
 	// create new scope
-	initialScope := context.ScopeTrace.CurrentScope          // save current scope, scope at call time
-	context.ScopeTrace.CurrentScope = f.DeclScope            // set function declaration scope as current scope
-	context.ScopeTrace.PushScope("func: " + token.GetText()) // push function scope
+	initialScope := context.ScopeTrace.CurrentScope // save current scope, scope at call time
+
+	if f.DefaultScope != nil {
+		context.ScopeTrace.CurrentScope = f.DefaultScope // set function default scope as current scope
+	} else {
+		context.ScopeTrace.CurrentScope = f.DeclScope            // set function declaration scope as current scope
+		context.ScopeTrace.PushScope("func: " + token.GetText()) // push a new function scope
+	}
+
+	wasMutating := context.ScopeTrace.CurrentScope.IsMutating
+	context.ScopeTrace.CurrentScope.IsMutating = f.IsMutating
+
+	fmt.Println("Ejecutando funcion: ", f.Name)
+	fmt.Println("Was mutating: ", wasMutating)
+	fmt.Println("Is mutating: ", f.IsMutating)
 
 	// push return item to callstack
 	funcItem := &CallStackItem{
@@ -62,9 +75,10 @@ func (f *Function) Exec(visitor *ReplVisitor, args []*Argument, token antlr.Toke
 
 	defer func() {
 
-		context.CallStack.Clean(funcItem)              // clean callstack
-		context.ScopeTrace.PopScope()                  // pop function scope
-		context.ScopeTrace.CurrentScope = initialScope // restore the call time scope
+		context.CallStack.Clean(funcItem)                        // clean callstack
+		context.ScopeTrace.PopScope()                            // pop function scope
+		context.ScopeTrace.CurrentScope.IsMutating = wasMutating // restore mutating flag
+		context.ScopeTrace.CurrentScope = initialScope           // restore the call time scope
 
 		if item, ok := recover().(*CallStackItem); item != nil && ok {
 

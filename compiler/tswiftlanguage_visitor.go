@@ -82,6 +82,9 @@ type TSwiftLanguageVisitor interface {
 	// Visit a parse tree produced by TSwiftLanguage#IdExp.
 	VisitIdExp(ctx *IdExpContext) interface{}
 
+	// Visit a parse tree produced by TSwiftLanguage#StructInstanceExp.
+	VisitStructInstanceExp(ctx *StructInstanceExpContext) interface{}
+
 	// Visit a parse tree produced by TSwiftLanguage#RepeatingExp.
 	VisitRepeatingExp(ctx *RepeatingExpContext) interface{}
 
@@ -159,4 +162,25 @@ type TSwiftLanguageVisitor interface {
 
 	// Visit a parse tree produced by TSwiftLanguage#FuncParam.
 	VisitFuncParam(ctx *FuncParamContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#StructDecl.
+	VisitStructDecl(ctx *StructDeclContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#StructAttr.
+	VisitStructAttr(ctx *StructAttrContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#StructFunc.
+	VisitStructFunc(ctx *StructFuncContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#StructInstance.
+	VisitStructInstance(ctx *StructInstanceContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#StructInstanceArgList.
+	VisitStructInstanceArgList(ctx *StructInstanceArgListContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#StructInstanceArg.
+	VisitStructInstanceArg(ctx *StructInstanceArgContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#StructVector.
+	VisitStructVector(ctx *StructVectorContext) interface{}
 }

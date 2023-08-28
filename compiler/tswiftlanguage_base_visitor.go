@@ -107,6 +107,10 @@ func (v *BaseTSwiftLanguageVisitor) VisitIdExp(ctx *IdExpContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
+func (v *BaseTSwiftLanguageVisitor) VisitStructInstanceExp(ctx *StructInstanceExpContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
 func (v *BaseTSwiftLanguageVisitor) VisitRepeatingExp(ctx *RepeatingExpContext) interface{} {
 	return v.VisitChildren(ctx)
 }
@@ -208,5 +212,33 @@ func (v *BaseTSwiftLanguageVisitor) VisitParamList(ctx *ParamListContext) interf
 }
 
 func (v *BaseTSwiftLanguageVisitor) VisitFuncParam(ctx *FuncParamContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitStructDecl(ctx *StructDeclContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitStructAttr(ctx *StructAttrContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitStructFunc(ctx *StructFuncContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitStructInstance(ctx *StructInstanceContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitStructInstanceArgList(ctx *StructInstanceArgListContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitStructInstanceArg(ctx *StructInstanceArgContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitStructVector(ctx *StructVectorContext) interface{} {
 	return v.VisitChildren(ctx)
 }

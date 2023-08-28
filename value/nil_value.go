@@ -16,3 +16,20 @@ func (s NilValue) Copy() IVOR {
 }
 
 var DefaultNilValue = &NilValue{}
+
+type UnInitializedValue struct {
+}
+
+func (s UnInitializedValue) Value() interface{} {
+	return nil
+}
+
+func (s UnInitializedValue) Type() string {
+	return IVOR_UNINITIALIZED
+}
+
+func (s UnInitializedValue) Copy() IVOR {
+	return DefaultUnInitializedValue
+}
+
+var DefaultUnInitializedValue = &UnInitializedValue{}

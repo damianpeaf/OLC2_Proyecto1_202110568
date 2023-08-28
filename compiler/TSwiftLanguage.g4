@@ -20,7 +20,8 @@ stmt:
 	| for_stmt
 	| guard_stmt
 	| func_call delimiter
-	| func_dcl;
+	| func_dcl
+	| strct_dcl;
 
 decl_stmt:
 	var_type ID COLON type EQUALS expr		# TypeValueDecl
@@ -61,6 +62,7 @@ literal:
 
 expr:
 	LPAREN expr RPAREN									# ParenExp // (a)
+	| struct_instance									# StructInstanceExp // Point(x: 1, y: 2) //!!! TEMPORARY
 	| func_call											# FuncCallExp // a.a.a()
 	| id_pattern										# IdExp // a.a.a
 	| vector_item										# VectorItemExp // a.a.a[0]
@@ -119,3 +121,21 @@ func_dcl:
 
 param_list: func_param (COMMA func_param)* # ParamList;
 func_param: ID? ID COLON INOUT_KW? type # FuncParam;
+
+// * Structs
+
+strct_dcl: STRUCT_KW ID LBRACE struct_prop* RBRACE # StructDecl;
+
+struct_prop:
+	var_type ID (COLON type)? (EQUALS expr)?	# StructAttr
+	| MUTATING_KW? func_dcl						# StructFunc;
+
+struct_instance:
+	ID LPAREN struct_instance_arg_list? RPAREN # StructInstance;
+
+struct_instance_arg_list:
+	struct_instance_arg (COMMA struct_instance_arg)* # StructInstanceArgList;
+
+struct_instance_arg: ID COLON expr # StructInstanceArg;
+
+struct_vector: LBRACK ID RBRACK LPAREN RPAREN # StructVector;
