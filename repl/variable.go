@@ -94,9 +94,9 @@ func (v *Variable) Assign(val value.IVOR, isMutatingContext bool) (bool, string)
 
 	v.Value = val
 
-	if obj, ok := val.(*ObjectValue); ok {
-		v.Value = obj.Copy()
-	}
+	// if obj, ok := val.(*ObjectValue); ok {
+	// 	v.Value = obj.Copy()
+	// }
 
 	return v.TypeValidation()
 }

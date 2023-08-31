@@ -5,6 +5,7 @@ import { fireDangerToast, fireScucessToast } from "../components/toasts"
 export type ApiResponse = {
     output: string
     errors: TSwiftError[] | null
+    cstSvg: string
 }
 
 export const useTSwift = () => {
@@ -79,7 +80,16 @@ export const useTSwift = () => {
             body: formData
         })
 
-        const { errors, output } = await res.json() as ApiResponse
+        const { errors, output, cstSvg } = await res.json() as ApiResponse
+
+
+        if (cstSvg != null) {
+            console.log({
+                type: 'set-graphviz-content',
+                payload: { content: cstSvg }
+            })
+            dispatch({ type: 'set-graphviz-content', payload: { content: cstSvg } })
+        }
 
         // * Set terminal content
         setTerminalContent(output)
@@ -95,13 +105,12 @@ export const useTSwift = () => {
         }
 
         // * CST graphviz report
-        // dispatch({ type: 'set-graphviz-content', payload: { content: runtime.ast.graphviz } })
 
         // * Symbol table report
         // setSymbolTable(runtime.ast.context.scopeTrace.graphviz || '');
 
         // * Reset terminal content
-        dispatch({ type: 'reset-graphviz-content' })
+        // dispatch({ type: 'reset-graphviz-content' })
         setSymbolTable('')
 
     }

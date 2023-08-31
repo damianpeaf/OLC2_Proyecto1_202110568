@@ -1,21 +1,21 @@
-import { useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment, useState, useEffect } from 'react';
 import { useTSwift } from '../../hooks'
-import { DotViewer } from '../dot';
-
+import RViewerJS from 'viewerjs-react'
+import 'viewerjs-react/dist/index.css'
 
 export const AstModal = () => {
 
-  const { isAstModalOpen, closeAstModal, graphviz: content } = useTSwift();
+  const { isAstModalOpen, closeAstModal, graphviz } = useTSwift();
 
-  const [graphiz, setGraphiz] = useState<string | null>(null)
+  const [b64Svg, setB64Svg] = useState<string | null>(null)
 
   useEffect(() => {
-    if (isAstModalOpen) {
-      setGraphiz(content)
-    }
-  }, [content, isAstModalOpen])
+
+    if (graphviz) setB64Svg(btoa(unescape(encodeURIComponent(graphviz))))
+    else setB64Svg(null)
+
+  }, [graphviz])
 
   return (
     <Transition appear show={isAstModalOpen} as={Fragment}>
@@ -51,9 +51,20 @@ export const AstModal = () => {
                   Reporte AST
                 </Dialog.Title>
                 {
-                  graphiz ?
-                    <div className="w-full h-full flex justify-center items-center min-h-[80vh]">
-                      <DotViewer dot={graphiz} />
+                  b64Svg ?
+                    <div className="w-full h-full flex justify-center items-center min-h-[80vh] bg-white">
+                      <style>
+                        {`
+                        .viewer-backdrop {
+                          background-color: white !important;
+                        }
+                        `}
+                      </style>
+                      {/* @ts-ignore */}
+                      <RViewerJS
+                      >
+                        <img src={`data:image/svg+xml;base64,${b64Svg}`} alt="AST" className="w-full h-full bg-white fill-white" />
+                      </RViewerJS>
                     </div>
                     :
                     <div className="mt-4">

@@ -1,6 +1,7 @@
 package repl
 
 import (
+	"fmt"
 	"main/value"
 
 	"github.com/antlr4-go/antlr/v4"
@@ -29,10 +30,13 @@ func (o ObjectValue) Type() string {
 func (o *ObjectValue) Copy() value.IVOR {
 	args := make([]*StructArg, 0)
 
+	fmt.Println("NO SE DEBERIA LLAMAR A COPY")
+	fmt.Println(o.ConcretType)
+
 	for _, prop := range o.InternalScope.variables {
 		args = append(args, &StructArg{
 			Name:  prop.Name,
-			Value: prop.Value.Copy(),
+			Value: prop.Value,
 		})
 	}
 

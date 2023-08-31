@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"main/compiler"
+	"main/cst"
 	"main/repl"
 
 	"github.com/antlr4-go/antlr/v4"
@@ -48,10 +49,11 @@ func main() {
 		return c.JSON(struct {
 			Errors []repl.Error `json:"errors"`
 			Output string       `json:"output"`
+			CSTSvg string       `json:"cstSvg"`
 		}{
 			Errors: replVisitor.ErrorTable.Errors,
 			Output: replVisitor.Console.GetOutput(),
-			// TODO: CST report
+			CSTSvg: cst.CstReport(code),
 			// TODO: scope trace report
 		})
 
