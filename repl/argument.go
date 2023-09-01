@@ -8,7 +8,7 @@ import (
 
 type Argument struct {
 	Name            string
-	Object          value.IVOR
+	Value           value.IVOR
 	PassByReference bool
 	Token           antlr.Token
 	VariableRef     *Variable

@@ -6,6 +6,7 @@ import (
 	"main/compiler"
 	"main/value"
 	"strconv"
+	"strings"
 
 	"github.com/antlr4-go/antlr/v4"
 )
@@ -110,6 +111,10 @@ func (v *ReplVisitor) VisitTypeValueDecl(ctx *compiler.TypeValueDeclContext) int
 		varValue = obj.Copy()
 	}
 
+	if IsVectorType(varValue.Type()) {
+		varValue = varValue.Copy()
+	}
+
 	variable, msg := v.ScopeTrace.AddVariable(varName, varType, varValue, isConst, false, ctx.GetStart())
 
 	// Variable already exists
@@ -135,6 +140,10 @@ func (v *ReplVisitor) VisitValueDecl(ctx *compiler.ValueDeclContext) interface{}
 	// copy object
 	if obj, ok := varValue.(*ObjectValue); ok {
 		varValue = obj.Copy()
+	}
+
+	if IsVectorType(varValue.Type()) {
+		varValue = varValue.Copy()
 	}
 
 	variable, msg := v.ScopeTrace.AddVariable(varName, varType, varValue, isConst, false, ctx.GetStart())
@@ -421,6 +430,15 @@ func (v *ReplVisitor) VisitDirectAssign(ctx *compiler.DirectAssignContext) inter
 		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Variable "+varName+" no encontrada")
 	} else {
 
+		// copy object
+		if obj, ok := varValue.(*ObjectValue); ok {
+			varValue = obj.Copy()
+		}
+
+		if IsVectorType(varValue.Type()) {
+			varValue = varValue.Copy()
+		}
+
 		canMutate := true
 
 		if v.ScopeTrace.CurrentScope.isStruct {
@@ -490,7 +508,7 @@ func (v *ReplVisitor) VisitVectorAssign(ctx *compiler.VectorAssignContext) inter
 
 		leftValue := itemRef.Value
 
-		// check type, todo: improve cast
+		// check type, todo: improve cast -> ¿? idk what i was thinking
 		if rightValue.Type() != itemRef.Vector.ItemType {
 			v.ErrorTable.NewSemanticError(ctx.GetStart(), "No se puede asignar un valor de tipo "+rightValue.Type()+" a un vector de tipo "+itemRef.Vector.ItemType)
 			return nil
@@ -521,7 +539,7 @@ func (v *ReplVisitor) VisitVectorAssign(ctx *compiler.VectorAssignContext) inter
 	case *MatrixItemReference:
 		leftValue := itemRef.Value
 
-		// check type, todo: improve cast
+		// check type, todo: improve cast -> ¿? idk what i was thinking
 		if rightValue.Type() != RemoveBrackets(itemRef.Matrix.Type()) {
 			v.ErrorTable.NewSemanticError(ctx.GetStart(), "No se puede asignar un valor de tipo "+rightValue.Type()+" a una matriz de tipo "+RemoveBrackets(itemRef.Matrix.Type()))
 			return nil
@@ -583,7 +601,11 @@ func (v *ReplVisitor) VisitStringLiteral(ctx *compiler.StringLiteralContext) int
 	// remove quotes
 	stringVal := ctx.GetText()[1 : len(ctx.GetText())-1]
 
-	// Todo: scape sequences
+	// \" \\ \n \r \
+	stringVal = strings.ReplaceAll(stringVal, "\\\"", "\"")
+	stringVal = strings.ReplaceAll(stringVal, "\\\\", "\\")
+	stringVal = strings.ReplaceAll(stringVal, "\\n", "\n")
+	stringVal = strings.ReplaceAll(stringVal, "\\r", "\r")
 
 	// Character literal
 	if len(stringVal) == 1 {
@@ -625,11 +647,6 @@ func (v *ReplVisitor) VisitIdExp(ctx *compiler.IdExpContext) interface{} {
 	if variable == nil {
 		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Variable "+varName+" no encontrada")
 		return value.DefaultNilValue
-	}
-
-	if IsVectorType(variable.Type) {
-		// copy vector
-		return variable.Value.Copy()
 	}
 
 	// ? pointer
@@ -699,10 +716,6 @@ func (v *ReplVisitor) VisitBinaryExp(ctx *compiler.BinaryExpContext) interface{}
 	}
 
 	return result
-}
-
-func (v *ReplVisitor) VisitStructInstanceExp(ctx *compiler.StructInstanceExpContext) interface{} {
-	return v.Visit(ctx.Struct_instance())
 }
 
 func (v *ReplVisitor) VisitIfStmt(ctx *compiler.IfStmtContext) interface{} {
@@ -990,6 +1003,7 @@ func (v *ReplVisitor) VisitForStmt(ctx *compiler.ForStmtContext) interface{} {
 
 	v.VisitInnerFor(ctx, outerForScope, innerForScope, forItem, iterableItem, iterableVariable)
 
+	iterableItem.Reset()
 	v.ScopeTrace.PopScope()    // pop inner for scope
 	v.ScopeTrace.PopScope()    // pop outer for scope
 	v.CallStack.Clean(forItem) // ? clean item if it's still in call stack
@@ -1145,19 +1159,30 @@ func (v *ReplVisitor) VisitContinueStmt(ctx *compiler.ContinueStmtContext) inter
 
 func (v *ReplVisitor) VisitFuncCall(ctx *compiler.FuncCallContext) interface{} {
 
-	funcName := v.Visit(ctx.Id_pattern()).(string)
+	// find if its a func or constructor of a struct
 
-	funcObj, msg := v.ScopeTrace.GetFunction(funcName)
+	canditateName := v.Visit(ctx.Id_pattern()).(string)
+	funcObj, msg1 := v.ScopeTrace.GetFunction(canditateName)
+	structObj, msg2 := v.ScopeTrace.GlobalScope.GetStruct(canditateName)
 
-	if funcObj == nil {
-		v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
+	if funcObj == nil && structObj == nil {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), msg1+msg2)
 		return value.DefaultNilValue
 	}
 
 	args := make([]*Argument, 0)
-
 	if ctx.Arg_list() != nil {
 		args = v.Visit(ctx.Arg_list()).([]*Argument)
+	}
+
+	// struct has priority over func
+	if structObj != nil {
+		if IsArgValidForStruct(args) {
+			return NewObjectValue(v, canditateName, ctx.Id_pattern().GetStart(), args, false)
+		} else {
+			v.ErrorTable.NewSemanticError(ctx.GetStart(), "Si bien "+canditateName+" es un struct, no se puede llamar a su constructor con los argumentos especificados. Ni tampoco es una funcion.")
+			return value.DefaultNilValue
+		}
 	}
 
 	switch funcObj := funcObj.(type) {
@@ -1235,7 +1260,7 @@ func (v *ReplVisitor) VisitFuncArg(ctx *compiler.FuncArgContext) interface{} {
 
 	return &Argument{
 		Name:            argName,
-		Object:          argValue,
+		Value:           argValue,
 		PassByReference: passByReference,
 		Token:           ctx.GetStart(),
 		VariableRef:     argVariableRef,
@@ -1435,39 +1460,20 @@ func (v *ReplVisitor) VisitStructFunc(ctx *compiler.StructFuncContext) interface
 	return nil
 }
 
-func (v *ReplVisitor) VisitStructInstance(ctx *compiler.StructInstanceContext) interface{} {
-
-	targetStruct := ctx.ID().GetText()
-	structArgs := make([]*StructArg, 0)
-
-	if ctx.Struct_instance_arg_list() != nil {
-		structArgs = v.Visit(ctx.Struct_instance_arg_list()).([]*StructArg)
-	}
-
-	return NewObjectValue(v, targetStruct, ctx.ID().GetSymbol(), structArgs, false)
-
-}
-
-func (v *ReplVisitor) VisitStructInstanceArgList(ctx *compiler.StructInstanceArgListContext) interface{} {
-
-	args := make([]*StructArg, 0)
-
-	for _, arg := range ctx.AllStruct_instance_arg() {
-		args = append(args, v.Visit(arg).(*StructArg))
-	}
-
-	return args
-}
-
-func (v *ReplVisitor) VisitStructInstanceArg(ctx *compiler.StructInstanceArgContext) interface{} {
-	return &StructArg{
-		Name:  ctx.ID().GetText(),
-		Value: v.Visit(ctx.Expr()).(value.IVOR),
-		Token: ctx.ID().GetSymbol(),
-	}
-}
-
 func (v *ReplVisitor) VisitStructVector(ctx *compiler.StructVectorContext) interface{} {
-	// TODO: struct vector
-	return nil
+
+	_type := ctx.ID().GetText()
+
+	stc, msg := v.ScopeTrace.GlobalScope.GetStruct(_type)
+
+	if stc == nil {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), msg)
+		return value.DefaultNilValue
+	}
+
+	return NewVectorValue(make([]value.IVOR, 0), "["+_type+"]", _type)
+}
+
+func (v *ReplVisitor) VisitStructVectorExp(ctx *compiler.StructVectorExpContext) interface{} {
+	return v.Visit(ctx.Struct_vector())
 }

@@ -57,7 +57,6 @@ func (v *DclVisitor) VisitStmt(ctx *compiler.StmtContext) interface{} {
 
 func (v *DclVisitor) VisitFuncDecl(ctx *compiler.FuncDeclContext) interface{} {
 
-	// TODO: supoort for structs functions
 	if v.ScopeTrace.CurrentScope != v.ScopeTrace.GlobalScope {
 		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Las funciones solo pueden ser declaradas en el scope global")
 	}

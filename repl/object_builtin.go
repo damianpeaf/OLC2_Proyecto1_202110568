@@ -69,11 +69,11 @@ func appendCustomExec(builtinRef *ObjectBuiltInFunction, visitor *ReplVisitor, a
 	// get the value
 	arg := args["_"]
 
-	if vector.ItemType != arg.Object.Type() {
-		visitor.ErrorTable.NewSemanticError(arg.Token, "No se puede agregar un valor de tipo "+arg.Object.Type()+" a un vector de tipo "+vector.ItemType)
+	if vector.ItemType != arg.Value.Type() {
+		visitor.ErrorTable.NewSemanticError(arg.Token, "No se puede agregar un valor de tipo "+arg.Value.Type()+" a un vector de tipo "+vector.ItemType)
 		return
 	}
-	vector.InternalValue = append(vector.InternalValue, arg.Object)
+	vector.InternalValue = append(vector.InternalValue, arg.Value)
 	vector.updateProps()
 }
 
@@ -102,19 +102,19 @@ func removeCustomExec(builtinRef *ObjectBuiltInFunction, visitor *ReplVisitor, a
 	// get the value
 	arg := args["at"]
 
-	if arg.Object.Type() != value.IVOR_INT {
+	if arg.Value.Type() != value.IVOR_INT {
 		visitor.ErrorTable.NewSemanticError(arg.Token, "El argumento 'at' debe ser de tipo Int")
 		return
 	}
 
 	// out of bounds
-	if arg.Object.Value().(int) >= vector.Size() || arg.Object.Value().(int) < 0 {
+	if arg.Value.Value().(int) >= vector.Size() || arg.Value.Value().(int) < 0 {
 		visitor.ErrorTable.NewSemanticError(arg.Token, "El indice esta fuera de rango")
 		return
 	}
 
 	// remove the element
-	vector.InternalValue = append(vector.InternalValue[:arg.Object.Value().(int)], vector.InternalValue[arg.Object.Value().(int)+1:]...)
+	vector.InternalValue = append(vector.InternalValue[:arg.Value.Value().(int)], vector.InternalValue[arg.Value.Value().(int)+1:]...)
 	vector.updateProps()
 }
 

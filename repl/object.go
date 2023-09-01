@@ -1,7 +1,7 @@
 package repl
 
 import (
-	"fmt"
+	"main/compiler"
 	"main/value"
 
 	"github.com/antlr4-go/antlr/v4"
@@ -28,13 +28,10 @@ func (o ObjectValue) Type() string {
 }
 
 func (o *ObjectValue) Copy() value.IVOR {
-	args := make([]*StructArg, 0)
-
-	fmt.Println("NO SE DEBERIA LLAMAR A COPY")
-	fmt.Println(o.ConcretType)
+	args := make([]*Argument, 0)
 
 	for _, prop := range o.InternalScope.variables {
-		args = append(args, &StructArg{
+		args = append(args, &Argument{
 			Name:  prop.Name,
 			Value: prop.Value,
 		})
@@ -43,7 +40,7 @@ func (o *ObjectValue) Copy() value.IVOR {
 	return NewObjectValue(o.v, o.ConcretType, o.t, args, true)
 }
 
-func NewObjectValue(v *ReplVisitor, targetStruct string, targetToken antlr.Token, args []*StructArg, allowReinitialize bool) value.IVOR {
+func NewObjectValue(v *ReplVisitor, targetStruct string, targetToken antlr.Token, args []*Argument, allowReinitialize bool) value.IVOR {
 
 	// Check if struct exists
 
@@ -64,13 +61,23 @@ func NewObjectValue(v *ReplVisitor, targetStruct string, targetToken antlr.Token
 	}()
 
 	// Add fields to internal scope
+	for _, field := range structTemplate.Fields {
+		switch f := field.(type) {
+		case *compiler.StructAttrContext:
+			if f.Var_type().GetText() == targetStruct {
+				v.ErrorTable.NewSemanticError(targetToken, "No es posible definir un atributo del mismo tipo que la estructura")
+				return value.DefaultNilValue
+			}
+			break
+		}
+	}
 
 	for _, field := range structTemplate.Fields {
 		v.Visit(field)
 	}
 
 	// create args map
-	argMap := make(map[string]*StructArg)
+	argMap := make(map[string]*Argument)
 
 	for _, arg := range args {
 
@@ -110,15 +117,34 @@ func NewObjectValue(v *ReplVisitor, targetStruct string, targetToken antlr.Token
 			prop.IsConst = false
 		}
 
-		// reassign value
-		ok, msg := prop.Assign(arg.Value, false)
+		var throwError bool = false
+		var msg string = ""
+		var assignValue value.IVOR = arg.Value
+
+		// pointer support
+		if arg.PassByReference {
+
+			if arg.VariableRef == nil {
+				msg = "No es posible pasar por referencia un valor que no este asociado a una variable"
+				throwError = true
+			}
+
+			// create the pointer
+			assignValue = &PointerValue{
+				AssocVariable: arg.VariableRef,
+			}
+		}
+
+		if !throwError {
+			throwError, msg = prop.Assign(assignValue, false)
+		}
 
 		if wasConst {
 			prop.IsConst = true
 			wasConst = false
 		}
 
-		if !ok {
+		if !throwError {
 			v.ErrorTable.NewSemanticError(targetToken, msg)
 			return value.DefaultNilValue
 		}
@@ -168,4 +194,14 @@ func NewObjectValue(v *ReplVisitor, targetStruct string, targetToken antlr.Token
 		v:             v,
 		t:             targetToken,
 	}
+}
+
+func IsArgValidForStruct(arg []*Argument) bool {
+	for _, a := range arg {
+
+		if a.Name == "" {
+			return false
+		}
+	}
+	return true
 }

@@ -31,22 +31,22 @@ func Print(context *ReplContext, args []*Argument) (value.IVOR, bool, string) {
 
 	for i, arg := range args {
 
-		if !value.IsPrimitiveType(arg.Object.Type()) {
+		if !value.IsPrimitiveType(arg.Value.Type()) {
 			return value.DefaultNilValue, false, "La función print solo acepta tipos primitivos"
 		}
 
-		switch arg.Object.Type() {
+		switch arg.Value.Type() {
 
 		case value.IVOR_BOOL:
-			output += strconv.FormatBool(arg.Object.Value().(bool))
+			output += strconv.FormatBool(arg.Value.Value().(bool))
 		case value.IVOR_INT:
-			output += strconv.Itoa(arg.Object.Value().(int))
+			output += strconv.Itoa(arg.Value.Value().(int))
 		case value.IVOR_FLOAT:
-			output += strconv.FormatFloat(arg.Object.Value().(float64), 'f', 4, 64) // 4 digits of precision
+			output += strconv.FormatFloat(arg.Value.Value().(float64), 'f', 4, 64) // 4 digits of precision
 		case value.IVOR_STRING:
-			output += arg.Object.Value().(string)
+			output += arg.Value.Value().(string)
 		case value.IVOR_CHARACTER:
-			output += arg.Object.Value().(string)
+			output += arg.Value.Value().(string)
 		case value.IVOR_NIL:
 			output += "nil"
 		}
@@ -70,7 +70,7 @@ func Int(context *ReplContext, args []*Argument) (value.IVOR, bool, string) {
 		return value.DefaultNilValue, false, "La función int solo acepta un argumento"
 	}
 
-	argValue := args[0].Object
+	argValue := args[0].Value
 
 	if !(argValue.Type() == value.IVOR_STRING || argValue.Type() == value.IVOR_FLOAT) {
 		return value.DefaultNilValue, false, "La función Int solo acepta un argumento de tipo string o float"
@@ -109,7 +109,7 @@ func Float(context *ReplContext, args []*Argument) (value.IVOR, bool, string) {
 		return value.DefaultNilValue, false, "La función float solo acepta un argumento"
 	}
 
-	argValue := args[0].Object
+	argValue := args[0].Value
 
 	if !(argValue.Type() == value.IVOR_STRING) {
 		return value.DefaultNilValue, false, "La función float solo acepta un argumento de tipo string"
@@ -134,7 +134,7 @@ func String(context *ReplContext, args []*Argument) (value.IVOR, bool, string) {
 		return value.DefaultNilValue, false, "La función string solo acepta un argumento"
 	}
 
-	argValue := args[0].Object
+	argValue := args[0].Value
 
 	if !(argValue.Type() == value.IVOR_INT || argValue.Type() == value.IVOR_FLOAT || argValue.Type() == value.IVOR_BOOL) {
 		return value.DefaultNilValue, false, "La función string solo acepta un argumento de tipo int, float o bool"

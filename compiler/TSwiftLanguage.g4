@@ -62,13 +62,13 @@ literal:
 
 expr:
 	LPAREN expr RPAREN									# ParenExp // (a)
-	| struct_instance									# StructInstanceExp // Point(x: 1, y: 2) //!!! TEMPORARY
 	| func_call											# FuncCallExp // a.a.a()
 	| id_pattern										# IdExp // a.a.a
 	| vector_item										# VectorItemExp // a.a.a[0]
 	| literal											# LiteralExp // 1, 1.0, "a", true, nil
 	| vector_expr										# VectorExp // [1, 2, 3]
 	| repeating											# RepeatingExp // [ Int ] (repeating: 0, count: 3)
+	| struct_vector										# StructVectorExp // [ Int ]()	
 	| op = (NOT | MINUS) expr							# UnaryExp // !a, -a	
 	| left = expr op = (MULT | DIV | MOD) right = expr	# BinaryExp // a * b, a / b, a % b
 	| left = expr op = (PLUS | MINUS) right = expr		# BinaryExp // a + b, a - b
@@ -114,7 +114,7 @@ func_call: id_pattern LPAREN arg_list? RPAREN # FuncCall;
 
 // external names -> num: value, num2: value2
 arg_list: func_arg (COMMA func_arg)* # ArgList;
-func_arg: (ID COLON)? (ANPERSAND)? (id_pattern | expr) # FuncArg;
+func_arg: (ID COLON)? (ANPERSAND)? (id_pattern | expr) # FuncArg; // 
 
 func_dcl:
 	FUNC_KW ID LPAREN param_list? RPAREN (ARROW type)? LBRACE stmt* RBRACE # FuncDecl;
@@ -129,13 +129,5 @@ strct_dcl: STRUCT_KW ID LBRACE struct_prop* RBRACE # StructDecl;
 struct_prop:
 	var_type ID (COLON type)? (EQUALS expr)?	# StructAttr
 	| MUTATING_KW? func_dcl						# StructFunc;
-
-struct_instance:
-	ID LPAREN struct_instance_arg_list? RPAREN # StructInstance;
-
-struct_instance_arg_list:
-	struct_instance_arg (COMMA struct_instance_arg)* # StructInstanceArgList;
-
-struct_instance_arg: ID COLON expr # StructInstanceArg;
 
 struct_vector: LBRACK ID RBRACK LPAREN RPAREN # StructVector;

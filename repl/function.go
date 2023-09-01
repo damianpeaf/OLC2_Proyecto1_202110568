@@ -116,7 +116,7 @@ func (f *Function) Exec(visitor *ReplVisitor, args []*Argument, token antlr.Toke
 			continue
 		}
 
-		context.ScopeTrace.CurrentScope.AddVariable(varName, arg.Object.Type(), arg.Object.Copy(), false, false, arg.Token)
+		context.ScopeTrace.CurrentScope.AddVariable(varName, arg.Value.Type(), arg.Value.Copy(), false, false, arg.Token)
 	}
 
 	// evaluate body
@@ -170,7 +170,7 @@ func (f *Function) ValidateArgs(context *ReplContext, args []*Argument, token an
 		}
 
 		// validate type
-		if argToValidate.Object.Type() != param.Type && param.Type != value.IVOR_ANY {
+		if argToValidate.Value.Type() != param.Type && param.Type != value.IVOR_ANY {
 			context.ErrorTable.NewSemanticError(token, fmt.Sprintf("Tipo de argumento %s invalido", param.InnerName))
 			errorFound = true
 			continue

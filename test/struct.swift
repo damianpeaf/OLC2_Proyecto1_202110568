@@ -121,3 +121,17 @@ struct Nodo {
 //su mismo tipo
 var siguiente: Nodo
 }
+
+
+
+struct Carro {
+    let llantas: Int
+}
+
+var carro1 = Carro(llantas: 4)
+
+func cambiarLlantas(_ car : inout Carro){
+    car.llantas = 5
+}
+
+cambiarLlantas(&carro1)
