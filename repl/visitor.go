@@ -1,7 +1,6 @@
 package repl
 
 import (
-	"fmt"
 	"log"
 	"main/compiler"
 	"main/value"
@@ -88,6 +87,8 @@ func (v *ReplVisitor) VisitStmt(ctx *compiler.StmtContext) interface{} {
 		v.Visit(ctx.Func_dcl())
 	} else if ctx.Strct_dcl() != nil {
 		v.Visit(ctx.Strct_dcl())
+	} else if ctx.Vector_func() != nil {
+		v.Visit(ctx.Vector_func())
 	} else {
 		log.Fatal("Statement not found")
 	}
@@ -1092,7 +1093,6 @@ func (v *ReplVisitor) VisitGuardStmt(ctx *compiler.GuardStmtContext) interface{}
 	condition := v.Visit(ctx.Expr()).(value.IVOR)
 
 	if condition.Type() != value.IVOR_BOOL {
-		fmt.Println(condition)
 		v.ErrorTable.NewSemanticError(ctx.GetStart(), "La condicion del guard debe ser un booleano")
 	}
 
@@ -1316,6 +1316,7 @@ func (v *ReplVisitor) VisitFuncDecl(ctx *compiler.FuncDeclContext) interface{} {
 		Body:            body,
 		DeclScope:       v.ScopeTrace.CurrentScope,
 		ReturnTypeToken: returnTypeToken,
+		Token:           ctx.GetStart(),
 	}
 
 	ok, msg := v.ScopeTrace.AddFunction(funcName, function)
@@ -1385,6 +1386,7 @@ func (v *ReplVisitor) VisitStructDecl(ctx *compiler.StructDeclContext) interface
 	structAdded, msg := v.ScopeTrace.GlobalScope.AddStruct(ctx.ID().GetText(), &Struct{
 		Name:   ctx.ID().GetText(),
 		Fields: ctx.AllStruct_prop(),
+		Token:  ctx.GetStart(),
 	})
 
 	if !structAdded {
@@ -1451,7 +1453,6 @@ func (v *ReplVisitor) VisitStructFunc(ctx *compiler.StructFuncContext) interface
 		structFunc, ok := funcDcl.(*Function)
 
 		if !ok {
-			fmt.Println("IS MUTATING2!!!")
 			return nil
 		}
 		structFunc.IsMutating = true
@@ -1476,4 +1477,75 @@ func (v *ReplVisitor) VisitStructVector(ctx *compiler.StructVectorContext) inter
 
 func (v *ReplVisitor) VisitStructVectorExp(ctx *compiler.StructVectorExpContext) interface{} {
 	return v.Visit(ctx.Struct_vector())
+}
+
+func (v *ReplVisitor) VisitVectorFuncExp(ctx *compiler.VectorFuncExpContext) interface{} {
+	return v.Visit(ctx.Vector_func())
+}
+
+func (v *ReplVisitor) VisitVectorPropExp(ctx *compiler.VectorPropExpContext) interface{} {
+	return v.Visit(ctx.Vector_prop())
+}
+
+func (v *ReplVisitor) VisitVectorProp(ctx *compiler.VectorPropContext) interface{} {
+
+	var objectCandidate value.IVOR
+
+	switch itemRef := v.Visit(ctx.Vector_item()).(type) {
+	case *VectorItemReference:
+		objectCandidate = itemRef.Value
+	case *MatrixItemReference:
+		objectCandidate = itemRef.Value
+	}
+
+	obj, ok := objectCandidate.(*ObjectValue)
+
+	if !ok {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "El item del vector no es un struct")
+		return value.DefaultNilValue
+	}
+
+	lastScope := v.ScopeTrace.CurrentScope
+	v.ScopeTrace.CurrentScope = obj.InternalScope
+
+	defer func() {
+		v.ScopeTrace.CurrentScope = lastScope
+	}()
+
+	variable := v.ScopeTrace.GetVariable(ctx.Id_pattern().GetText())
+
+	if variable == nil {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "Propiedad "+ctx.Id_pattern().GetText()+" no encontrada item del vector")
+		return value.DefaultNilValue
+	}
+
+	return variable.Value
+}
+
+func (v *ReplVisitor) VisitVectorFunc(ctx *compiler.VectorFuncContext) interface{} {
+
+	var objectCandidate value.IVOR
+
+	switch itemRef := v.Visit(ctx.Vector_item()).(type) {
+	case *VectorItemReference:
+		objectCandidate = itemRef.Value
+	case *MatrixItemReference:
+		objectCandidate = itemRef.Value
+	}
+
+	obj, ok := objectCandidate.(*ObjectValue)
+
+	if !ok {
+		v.ErrorTable.NewSemanticError(ctx.GetStart(), "El objeto no es un struct")
+		return value.DefaultNilValue
+	}
+
+	lastScope := v.ScopeTrace.CurrentScope
+	v.ScopeTrace.CurrentScope = obj.InternalScope
+
+	defer func() {
+		v.ScopeTrace.CurrentScope = lastScope
+	}()
+
+	return v.Visit(ctx.Func_call())
 }

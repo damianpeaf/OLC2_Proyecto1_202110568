@@ -1,7 +1,6 @@
 package repl
 
 import (
-	"fmt"
 	"log"
 	"main/value"
 	"strings"
@@ -140,7 +139,6 @@ func (s *BaseScope) searchObjectVariable(name string, lastObj value.IVOR) *Varia
 		variable := s.GetVariable(parts[0])
 
 		if variable == nil {
-			fmt.Println("sexo")
 			return nil
 		}
 
@@ -153,7 +151,6 @@ func (s *BaseScope) searchObjectVariable(name string, lastObj value.IVOR) *Varia
 		case *VectorValue:
 			lastObj = obj.ObjectValue
 		default:
-			fmt.Println("xd")
 			return nil
 		}
 
@@ -372,45 +369,6 @@ func (s *ScopeTrace) GetFunction(name string) (value.IVOR, string) {
 	return s.CurrentScope.GetFunction(name)
 }
 
-func (s *ScopeTrace) Print() {
-
-	fmt.Println("Global Scope")
-	fmt.Println("============")
-
-	fmt.Println("Variables")
-	for k, v := range s.GlobalScope.variables {
-		fmt.Println(k, v.Value.Value(), v.Type)
-	}
-
-	fmt.Println("Funciones")
-	for k, v := range s.GlobalScope.functions {
-		fmt.Println(k, v)
-	}
-
-	fmt.Println("Child Scopes")
-	fmt.Println("============")
-	fmt.Println("")
-
-	for _, child := range s.GlobalScope.children {
-
-		fmt.Println(child.name)
-		fmt.Println("============")
-
-		fmt.Println("Variables")
-		for k, v := range child.variables {
-			fmt.Println(k, v.Value.Value())
-		}
-
-		fmt.Println("Funciones")
-		for k, v := range child.functions {
-			fmt.Println(k, v)
-		}
-
-		fmt.Println("")
-	}
-
-}
-
 func NewScopeTrace() *ScopeTrace {
 	globalScope := NewGlobalScope()
 	return &ScopeTrace{
@@ -446,4 +404,108 @@ func NewStructScope() *BaseScope {
 		parent:    newGlobal,
 		isStruct:  true,
 	}
+}
+
+// * Report
+
+type ReportTable struct {
+	GlobalScope ReportScope
+}
+
+type ReportScope struct {
+	Name        string
+	Vars        []ReportSymbol
+	Funcs       []ReportSymbol
+	Structs     []ReportSymbol
+	ChildScopes []ReportScope
+}
+
+type ReportSymbol struct {
+	Name   string
+	Type   string
+	Line   int
+	Column int
+}
+
+func (s *ScopeTrace) Report() ReportTable {
+	return ReportTable{
+		GlobalScope: s.CurrentScope.Report(),
+	}
+}
+
+func (s *BaseScope) Report() ReportScope {
+
+	reportScope := ReportScope{
+		Name:        s.name,
+		Vars:        make([]ReportSymbol, 0),
+		Funcs:       make([]ReportSymbol, 0),
+		Structs:     make([]ReportSymbol, 0),
+		ChildScopes: make([]ReportScope, 0),
+	}
+
+	for _, v := range s.variables {
+
+		token := v.Token
+		line := 0
+		column := 0
+
+		if token != nil {
+			line = token.GetLine()
+			column = token.GetColumn()
+		}
+
+		reportScope.Vars = append(reportScope.Vars, ReportSymbol{
+			Name:   v.Name,
+			Type:   v.Type,
+			Line:   line,
+			Column: column,
+		})
+	}
+
+	for _, f := range s.functions {
+		switch function := f.(type) {
+		case *BuiltInFunction:
+			reportScope.Funcs = append(reportScope.Funcs, ReportSymbol{
+				Name:   function.Name,
+				Type:   "Embebida: " + function.Name,
+				Line:   0,
+				Column: 0,
+			})
+		case *Function:
+
+			line := 0
+			column := 0
+
+			if function.Token != nil {
+				line = function.Token.GetLine()
+				column = function.Token.GetColumn()
+			}
+
+			reportScope.Funcs = append(reportScope.Funcs, ReportSymbol{
+				Name:   function.Name,
+				Type:   function.ReturnType,
+				Line:   line,
+				Column: column,
+			})
+		case *ObjectBuiltInFunction:
+			break
+		default:
+			log.Fatal("Function type not found")
+		}
+	}
+
+	for _, v := range s.structs {
+		reportScope.Structs = append(reportScope.Structs, ReportSymbol{
+			Name:   v.Name,
+			Type:   v.Name,
+			Line:   v.Token.GetLine(),
+			Column: v.Token.GetColumn(),
+		})
+	}
+
+	for _, v := range s.children {
+		reportScope.ChildScopes = append(reportScope.ChildScopes, v.Report())
+	}
+
+	return reportScope
 }

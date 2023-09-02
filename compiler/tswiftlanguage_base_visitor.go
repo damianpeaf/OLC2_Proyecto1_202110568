@@ -39,6 +39,14 @@ func (v *BaseTSwiftLanguageVisitor) VisitVectorItem(ctx *VectorItemContext) inte
 	return v.VisitChildren(ctx)
 }
 
+func (v *BaseTSwiftLanguageVisitor) VisitVectorProp(ctx *VectorPropContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitVectorFunc(ctx *VectorFuncContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
 func (v *BaseTSwiftLanguageVisitor) VisitRepeating(ctx *RepeatingContext) interface{} {
 	return v.VisitChildren(ctx)
 }
@@ -119,11 +127,19 @@ func (v *BaseTSwiftLanguageVisitor) VisitParenExp(ctx *ParenExpContext) interfac
 	return v.VisitChildren(ctx)
 }
 
+func (v *BaseTSwiftLanguageVisitor) VisitVectorPropExp(ctx *VectorPropExpContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
 func (v *BaseTSwiftLanguageVisitor) VisitVectorItemExp(ctx *VectorItemExpContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 
 func (v *BaseTSwiftLanguageVisitor) VisitFuncCallExp(ctx *FuncCallExpContext) interface{} {
+	return v.VisitChildren(ctx)
+}
+
+func (v *BaseTSwiftLanguageVisitor) VisitVectorFuncExp(ctx *VectorFuncExpContext) interface{} {
 	return v.VisitChildren(ctx)
 }
 

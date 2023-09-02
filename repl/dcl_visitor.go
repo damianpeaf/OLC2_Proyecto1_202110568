@@ -15,10 +15,10 @@ type DclVisitor struct {
 	StructNames []string
 }
 
-func NewDclVisitor() *DclVisitor {
+func NewDclVisitor(errorTable *ErrorTable) *DclVisitor {
 	return &DclVisitor{
 		ScopeTrace:  NewScopeTrace(),
-		ErrorTable:  NewErrorTable(),
+		ErrorTable:  errorTable,
 		StructNames: []string{},
 	}
 }
@@ -98,6 +98,7 @@ func (v *DclVisitor) VisitFuncDecl(ctx *compiler.FuncDeclContext) interface{} {
 		Body:            body,
 		DeclScope:       v.ScopeTrace.CurrentScope,
 		ReturnTypeToken: returnTypeToken,
+		Token:           ctx.GetStart(),
 	}
 
 	ok, msg := v.ScopeTrace.AddFunction(funcName, function)

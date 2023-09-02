@@ -1,5 +1,6 @@
 import { FC, ReactNode, useReducer, useEffect } from 'react';
 import { TSwiftActionType, TSwiftContext, TSwiftReducer } from '.';
+import { SymbolTableI } from '../components/modal';
 
 export interface DocumentFile {
     id: number;
@@ -31,28 +32,31 @@ export interface TSwiftState {
     isAstModalOpen: boolean;
     graphviz: string | null;
     errors: TSwiftError[];
-    symbolTable: string;
+    symbolTable: SymbolTableI | null;
     isSymbolTableModalOpen: boolean;
 }
 
 interface TSwiftProviderProps {
     children: ReactNode
 }
+
+const defaultState: TSwiftState = {
+    isConsoleOpen: false,
+    documents: [initialDocument],
+    currentDocument: initialDocument,
+    isRenameModalOpen: false,
+    terminalContent: '',
+    isAstModalOpen: false,
+    graphviz: null,
+    errors: [],
+    symbolTable: null,
+    isSymbolTableModalOpen: false
+}
+
 const TSwift_INITIAL_STATE: TSwiftState =
     localStorage.getItem('state')
         ? JSON.parse(localStorage.getItem('state')!)
-        : {
-            isConsoleOpen: false,
-            documents: [initialDocument],
-            currentDocument: initialDocument,
-            isRenameModalOpen: false,
-            terminalContent: '',
-            isAstModalOpen: false,
-            graphviz: null,
-            errors: [],
-            symbolTable: '',
-            isSymbolTableModalOpen: false
-        }
+        : defaultState
 
 export const TSwiftProvider: FC<TSwiftProviderProps> = ({ children }) => {
 

@@ -1,11 +1,13 @@
 import { useContext } from "react"
 import { DocumentFile, TSwiftContext, TSwiftError } from "../context"
 import { fireDangerToast, fireScucessToast } from "../components/toasts"
+import { SymbolTableI } from "../components/modal"
 
 export type ApiResponse = {
     output: string
     errors: TSwiftError[] | null
     cstSvg: string
+    scopeTrace: SymbolTableI | null
 }
 
 export const useTSwift = () => {
@@ -57,7 +59,7 @@ export const useTSwift = () => {
         dispatch({ type: 'set-terminal-content', payload: { content } })
     }
 
-    const setSymbolTable = (content: string) => {
+    const setSymbolTable = (content: SymbolTableI | null) => {
         dispatch({ type: 'set-symbol-table', payload: { content } })
     }
 
@@ -65,7 +67,7 @@ export const useTSwift = () => {
         dispatch({ type: 'set-terminal-content', payload: { content: '' } })
         dispatch({ type: 'reset-graphviz-content' })
         dispatch({ type: 'set-errors', payload: { errors: [] } })
-        setSymbolTable('')
+        setSymbolTable(null)
 
 
         const programInput = state.currentDocument.content
@@ -80,15 +82,26 @@ export const useTSwift = () => {
             body: formData
         })
 
-        const { errors, output, cstSvg } = await res.json() as ApiResponse
+        const { errors, output, cstSvg, scopeTrace } = await res.json() as ApiResponse
 
 
+        // * CST graphviz report
         if (cstSvg != null) {
             console.log({
                 type: 'set-graphviz-content',
                 payload: { content: cstSvg }
             })
             dispatch({ type: 'set-graphviz-content', payload: { content: cstSvg } })
+        }
+        // * Symbol table report
+
+
+        if (scopeTrace != null) {
+            console.log({
+                type: 'set-symbol-table',
+                payload: { content: scopeTrace }
+            })
+            setSymbolTable(scopeTrace)
         }
 
         // * Set terminal content
@@ -103,16 +116,6 @@ export const useTSwift = () => {
         } else {
             fireScucessToast('Programa ejecutado con éxito')
         }
-
-        // * CST graphviz report
-
-        // * Symbol table report
-        // setSymbolTable(runtime.ast.context.scopeTrace.graphviz || '');
-
-        // * Reset terminal content
-        // dispatch({ type: 'reset-graphviz-content' })
-        setSymbolTable('')
-
     }
 
     const openAstModal = () => {

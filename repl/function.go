@@ -19,6 +19,7 @@ type Function struct {
 	ReturnValue     value.IVOR
 	IsMutating      bool
 	DefaultScope    *BaseScope
+	Token           antlr.Token
 }
 
 func (f *Function) Value() interface{} {
@@ -57,10 +58,6 @@ func (f *Function) Exec(visitor *ReplVisitor, args []*Argument, token antlr.Toke
 
 	wasMutating := context.ScopeTrace.CurrentScope.IsMutating
 	context.ScopeTrace.CurrentScope.IsMutating = f.IsMutating
-
-	fmt.Println("Ejecutando funcion: ", f.Name)
-	fmt.Println("Was mutating: ", wasMutating)
-	fmt.Println("Is mutating: ", f.IsMutating)
 
 	// push return item to callstack
 	funcItem := &CallStackItem{

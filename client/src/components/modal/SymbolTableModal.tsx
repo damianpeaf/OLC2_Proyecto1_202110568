@@ -1,8 +1,10 @@
-import { useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react'
 import { Fragment, useState, useEffect } from 'react';
 import { useTSwift } from '../../hooks'
 import { DotViewer } from '../dot';
+import { graphvizReport } from './';
+
+
 
 
 export const SymbolTableModal = () => {
@@ -12,10 +14,9 @@ export const SymbolTableModal = () => {
   const [graphiz, setGraphiz] = useState<string | null>(null)
 
   useEffect(() => {
-    if (isSymbolTableModalOpen) {
-      setGraphiz(symbolTable)
-    }
-  }, [symbolTable, isSymbolTableModalOpen])
+    symbolTable && setGraphiz(graphvizReport(symbolTable))
+    symbolTable && console.log(graphvizReport(symbolTable))
+  }, [symbolTable])
 
   return (
     <Transition appear show={isSymbolTableModalOpen} as={Fragment}>

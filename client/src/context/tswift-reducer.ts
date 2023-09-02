@@ -4,6 +4,7 @@ import {
     TSwiftState,
     initialDocument
 } from '.';
+import { SymbolTableI } from '../components/modal';
 
 
 export type TSwiftActionType =
@@ -73,7 +74,7 @@ export type TSwiftActionType =
     } | {
         type: 'set-symbol-table',
         payload: {
-            content: string
+            content: SymbolTableI | null
         }
     } | {
         type: 'open-symbol-table-modal'

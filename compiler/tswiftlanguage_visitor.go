@@ -31,6 +31,12 @@ type TSwiftLanguageVisitor interface {
 	// Visit a parse tree produced by TSwiftLanguage#VectorItem.
 	VisitVectorItem(ctx *VectorItemContext) interface{}
 
+	// Visit a parse tree produced by TSwiftLanguage#VectorProp.
+	VisitVectorProp(ctx *VectorPropContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#VectorFunc.
+	VisitVectorFunc(ctx *VectorFuncContext) interface{}
+
 	// Visit a parse tree produced by TSwiftLanguage#repeating.
 	VisitRepeating(ctx *RepeatingContext) interface{}
 
@@ -91,11 +97,17 @@ type TSwiftLanguageVisitor interface {
 	// Visit a parse tree produced by TSwiftLanguage#ParenExp.
 	VisitParenExp(ctx *ParenExpContext) interface{}
 
+	// Visit a parse tree produced by TSwiftLanguage#VectorPropExp.
+	VisitVectorPropExp(ctx *VectorPropExpContext) interface{}
+
 	// Visit a parse tree produced by TSwiftLanguage#VectorItemExp.
 	VisitVectorItemExp(ctx *VectorItemExpContext) interface{}
 
 	// Visit a parse tree produced by TSwiftLanguage#FuncCallExp.
 	VisitFuncCallExp(ctx *FuncCallExpContext) interface{}
+
+	// Visit a parse tree produced by TSwiftLanguage#VectorFuncExp.
+	VisitVectorFuncExp(ctx *VectorFuncExpContext) interface{}
 
 	// Visit a parse tree produced by TSwiftLanguage#VectorExp.
 	VisitVectorExp(ctx *VectorExpContext) interface{}

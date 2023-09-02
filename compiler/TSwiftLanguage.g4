@@ -20,6 +20,7 @@ stmt:
 	| for_stmt
 	| guard_stmt
 	| func_call delimiter
+	| vector_func delimiter
 	| func_dcl
 	| strct_dcl;
 
@@ -32,6 +33,9 @@ vector_expr:
 	LBRACK (expr (COMMA expr)*)? RBRACK # VectorItemList;
 
 vector_item: id_pattern (LBRACK expr RBRACK)+ # VectorItem;
+
+vector_prop: vector_item DOT id_pattern # VectorProp;
+vector_func: vector_item DOT func_call # VectorFunc;
 
 repeating:
 	(vector_type | matrix_type) LPAREN ID COLON expr COMMA ID COLON expr RPAREN;
@@ -65,6 +69,8 @@ expr:
 	| func_call											# FuncCallExp // a.a.a()
 	| id_pattern										# IdExp // a.a.a
 	| vector_item										# VectorItemExp // a.a.a[0]
+	| vector_prop										# VectorPropExp // a[0].a.a
+	| vector_func										# VectorFuncExp // a[0].a.a()
 	| literal											# LiteralExp // 1, 1.0, "a", true, nil
 	| vector_expr										# VectorExp // [1, 2, 3]
 	| repeating											# RepeatingExp // [ Int ] (repeating: 0, count: 3)
