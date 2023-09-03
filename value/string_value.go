@@ -13,5 +13,5 @@ func (s StringValue) Type() string {
 }
 
 func (s StringValue) Copy() IVOR {
-	return StringValue{InternalValue: s.InternalValue}
+	return &StringValue{InternalValue: s.InternalValue}
 }

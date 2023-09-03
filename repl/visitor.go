@@ -1,6 +1,7 @@
 package repl
 
 import (
+	"fmt"
 	"log"
 	"main/compiler"
 	"main/value"
@@ -90,7 +91,7 @@ func (v *ReplVisitor) VisitStmt(ctx *compiler.StmtContext) interface{} {
 	} else if ctx.Vector_func() != nil {
 		v.Visit(ctx.Vector_func())
 	} else {
-		log.Fatal("Statement not found")
+		log.Fatal("Statement not found " + ctx.GetText())
 	}
 
 	return nil
@@ -379,7 +380,7 @@ func (v *ReplVisitor) VisitVectorItem(ctx *compiler.VectorItemContext) interface
 			indexValue := index.(*value.IntValue).InternalValue
 
 			if !vectorValue.ValidIndex(indexValue) {
-				v.ErrorTable.NewSemanticError(ctx.GetStart(), "El indice del vector esta fuera de rango")
+				v.ErrorTable.NewSemanticError(ctx.GetStart(), "El indice "+strconv.Itoa(indexValue)+" esta fuera de rango")
 				return nil
 			}
 
@@ -700,10 +701,22 @@ func (v *ReplVisitor) VisitUnaryExp(ctx *compiler.UnaryExpContext) interface{} {
 
 func (v *ReplVisitor) VisitBinaryExp(ctx *compiler.BinaryExpContext) interface{} {
 
+	op := ctx.GetOp().GetText()
 	left := v.Visit(ctx.GetLeft()).(value.IVOR)
+
+	earlyCheck, ok := EarlyReturnStrats[op]
+
+	if ok {
+		ok, _, result := earlyCheck.Validate(left)
+
+		if ok {
+			return result
+		}
+	}
+
 	right := v.Visit(ctx.GetRight()).(value.IVOR)
 
-	strat, ok := BinaryStrats[ctx.GetOp().GetText()]
+	strat, ok := BinaryStrats[op]
 
 	if !ok {
 		log.Fatal("Binary operator not found")
@@ -955,7 +968,14 @@ func (v *ReplVisitor) VisitForStmt(ctx *compiler.ForStmtContext) interface{} {
 	var iterableItem *VectorValue = DefaultEmptyVectorValue
 
 	if ctx.Range_() != nil {
-		iterableItem = v.Visit(ctx.Range_()).(*VectorValue)
+		rangeItem, ok := v.Visit(ctx.Range_()).(*VectorValue)
+
+		if !ok {
+			v.ErrorTable.NewSemanticError(ctx.GetStart(), "El valor del rango debe ser un vector")
+			return nil
+		}
+
+		iterableItem = rangeItem
 	}
 
 	if ctx.Expr() != nil {
@@ -1548,4 +1568,43 @@ func (v *ReplVisitor) VisitVectorFunc(ctx *compiler.VectorFuncContext) interface
 	}()
 
 	return v.Visit(ctx.Func_call())
+}
+
+func (s *ScopeTrace) Print() {
+
+	fmt.Println("Global Scope")
+	fmt.Println("============")
+
+	fmt.Println("Variables")
+	for k, v := range s.GlobalScope.variables {
+		fmt.Println(k, v.Value.Value(), v.Type)
+	}
+
+	fmt.Println("Funciones")
+	for k, v := range s.GlobalScope.functions {
+		fmt.Println(k, v)
+	}
+
+	fmt.Println("Child Scopes")
+	fmt.Println("============")
+	fmt.Println("")
+
+	for _, child := range s.GlobalScope.children {
+
+		fmt.Println(child.name)
+		fmt.Println("============")
+
+		fmt.Println("Variables")
+		for k, v := range child.variables {
+			fmt.Println(k, v.Value.Value())
+		}
+
+		fmt.Println("Funciones")
+		for k, v := range child.functions {
+			fmt.Println(k, v)
+		}
+
+		fmt.Println("")
+	}
+
 }

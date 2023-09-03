@@ -5,6 +5,7 @@ import {
     initialDocument
 } from '.';
 import { SymbolTableI } from '../components/modal';
+import { v4 } from 'uuid'
 
 
 export type TSwiftActionType =
@@ -20,13 +21,13 @@ export type TSwiftActionType =
     {
         type: 'close-tab',
         payload: {
-            id: number
+            id: string
         }
     } |
     {
         type: 'rename-tab',
         payload: {
-            id: number,
+            id: string,
             name: string
         }
     } | {
@@ -44,7 +45,7 @@ export type TSwiftActionType =
     {
         type: 'set-current-document',
         payload: {
-            id: number
+            id: string
         }
     } | {
         type: 'open-rename-modal'
@@ -87,7 +88,7 @@ export const TSwiftReducer = (state: TSwiftState, action: TSwiftActionType): TSw
         case 'new-tab':
 
             const document: DocumentFile = {
-                id: state.documents.length + 1,
+                id: v4(),
                 name: 'Untitled',
                 content: '',
             }
@@ -110,13 +111,15 @@ export const TSwiftReducer = (state: TSwiftState, action: TSwiftActionType): TSw
             }
 
         case 'close-tab':
+            const emptyDoc = initialDocument()
+
             return {
                 ...state,
                 documents: state.documents.filter(doc => doc.id !== action.payload.id).length > 0
                     ? state.documents.filter(doc => doc.id !== action.payload.id)
-                    : [initialDocument],
+                    : [emptyDoc],
                 currentDocument: state.currentDocument?.id === action.payload.id
-                    ? state.documents.find(doc => doc.id !== action.payload.id) || initialDocument
+                    ? state.documents.find(doc => doc.id !== action.payload.id) || emptyDoc
                     : state.currentDocument
             }
         case 'rename-tab':
@@ -143,7 +146,7 @@ export const TSwiftReducer = (state: TSwiftState, action: TSwiftActionType): TSw
 
             const doc: DocumentFile = {
                 ...action.payload.document,
-                id: state.documents.length + 1
+                id: v4()
             }
 
             return {

@@ -21,7 +21,7 @@ export interface SymbolI {
 class Scope implements ScopeI {
 
     static idCounter = 0
-    static maxDepth = 5 // <-- max depth of the rendered children scopes
+    static maxDepth = 20 // <-- max depth of the rendered children scopes
 
     Vars: SymbolI[]
     Funcs: SymbolI[]

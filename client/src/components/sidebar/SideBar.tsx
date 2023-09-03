@@ -29,7 +29,7 @@ export const SideBar = () => {
             <SideBarDivider />
             <FileOptions />
             <SideBarDivider />
-            <SideBarItem icon={<TbBinaryTree2 />} label="Reporte AST" onClick={openAstModal} />
+            <SideBarItem icon={<TbBinaryTree2 />} label="Reporte CST" onClick={openAstModal} />
             <SideBarDivider />
             <SideBarItem icon={<VscRepo />} label="Reporte Tabla simbolos" onClick={openSymbolTableModal} />
             <SideBarDivider />

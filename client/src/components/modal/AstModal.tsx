@@ -48,7 +48,7 @@ export const AstModal = () => {
                   as="h3"
                   className="text-lg font-medium leading-6 text-white"
                 >
-                  Reporte AST
+                  Reporte CST
                 </Dialog.Title>
                 {
                   b64Svg ?
@@ -69,7 +69,7 @@ export const AstModal = () => {
                     :
                     <div className="mt-4">
                       <p className="text-lg text-gray-300">
-                        No se ha generado el reporte AST
+                        No se ha generado el reporte CST
                       </p>
                     </div>
                 }

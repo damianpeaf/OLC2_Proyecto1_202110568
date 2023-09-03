@@ -1,18 +1,20 @@
 import { FC, ReactNode, useReducer, useEffect } from 'react';
 import { TSwiftActionType, TSwiftContext, TSwiftReducer } from '.';
 import { SymbolTableI } from '../components/modal';
+import { v4 } from 'uuid';
+
 
 export interface DocumentFile {
-    id: number;
+    id: string;
     name: string;
     content: string;
 }
 
-export const initialDocument: DocumentFile = {
-    id: 0,
+export const initialDocument = () => ({
+    id: v4(),
     name: 'Untitled',
     content: ''
-}
+})
 
 export interface TSwiftError {
 
@@ -40,10 +42,12 @@ interface TSwiftProviderProps {
     children: ReactNode
 }
 
+const doc = initialDocument()
+
 const defaultState: TSwiftState = {
     isConsoleOpen: false,
-    documents: [initialDocument],
-    currentDocument: initialDocument,
+    documents: [doc],
+    currentDocument: doc,
     isRenameModalOpen: false,
     terminalContent: '',
     isAstModalOpen: false,

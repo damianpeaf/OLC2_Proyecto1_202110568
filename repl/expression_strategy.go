@@ -129,6 +129,21 @@ var addStrategy = BinaryStrategy{
 				}
 			},
 		},
+		{
+			LeftType:  value.IVOR_CHARACTER,
+			RightType: value.IVOR_STRING,
+			LeftConversion: func(v value.IVOR) value.IVOR {
+				return &value.StringValue{
+					InternalValue: string(v.(*value.CharacterValue).InternalValue),
+				}
+			},
+			RightConversion: nil,
+			Eval: func(left, right value.IVOR) (bool, string, value.IVOR) {
+				return true, "", &value.StringValue{
+					InternalValue: left.(*value.StringValue).InternalValue + right.(*value.StringValue).InternalValue,
+				}
+			},
+		},
 	},
 }
 
@@ -716,4 +731,55 @@ var minusStrategy = UnaryStrategy{
 var UnaryStrats = map[string]UnaryStrategy{
 	"!": notStrategy,
 	"-": minusStrategy,
+}
+
+// Early return strats
+
+// * And
+
+var andEarlyReturnStrategy = UnaryStrategy{
+	Name: "&&",
+	Validations: []UnaryValidation{
+		{
+			Type:       value.IVOR_BOOL,
+			Conversion: nil,
+			Eval: func(i1, i2 value.IVOR) (bool, string, value.IVOR) {
+
+				if !i1.(*value.BoolValue).InternalValue {
+					return true, "", &value.BoolValue{
+						InternalValue: false,
+					}
+				}
+
+				return false, "", nil
+			},
+		},
+	},
+}
+
+// * Or
+
+var orEarlyReturnStrategy = UnaryStrategy{
+	Name: "||",
+	Validations: []UnaryValidation{
+		{
+			Type:       value.IVOR_BOOL,
+			Conversion: nil,
+			Eval: func(i1, i2 value.IVOR) (bool, string, value.IVOR) {
+
+				if i1.(*value.BoolValue).InternalValue {
+					return true, "", &value.BoolValue{
+						InternalValue: true,
+					}
+				}
+
+				return false, "", nil
+			},
+		},
+	},
+}
+
+var EarlyReturnStrats = map[string]UnaryStrategy{
+	"&&": andEarlyReturnStrategy,
+	"||": orEarlyReturnStrategy,
 }

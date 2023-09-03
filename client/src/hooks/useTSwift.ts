@@ -23,11 +23,11 @@ export const useTSwift = () => {
     }
 
 
-    const renameDocument = (id: number, name: string) => {
+    const renameDocument = (id: string, name: string) => {
         dispatch({ type: 'rename-tab', payload: { id, name } })
     }
 
-    const closeDocument = (id: number) => {
+    const closeDocument = (id: string) => {
         dispatch({ type: 'close-tab', payload: { id } })
     }
 
@@ -43,7 +43,7 @@ export const useTSwift = () => {
         dispatch({ type: 'save-file', payload: { document } })
     }
 
-    const setCurrentDocument = (id: number) => {
+    const setCurrentDocument = (id: string) => {
         dispatch({ type: 'set-current-document', payload: { id } })
     }
 

@@ -15,7 +15,6 @@ export const SymbolTableModal = () => {
 
   useEffect(() => {
     symbolTable && setGraphiz(graphvizReport(symbolTable))
-    symbolTable && console.log(graphvizReport(symbolTable))
   }, [symbolTable])
 
   return (

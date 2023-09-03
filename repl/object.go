@@ -1,7 +1,6 @@
 package repl
 
 import (
-	"main/compiler"
 	"main/value"
 
 	"github.com/antlr4-go/antlr/v4"
@@ -62,17 +61,6 @@ func NewObjectValue(v *ReplVisitor, targetStruct string, targetToken antlr.Token
 
 	// Add fields to internal scope
 	for _, field := range structTemplate.Fields {
-		switch f := field.(type) {
-		case *compiler.StructAttrContext:
-			if f.Var_type().GetText() == targetStruct {
-				v.ErrorTable.NewSemanticError(targetToken, "No es posible definir un atributo del mismo tipo que la estructura")
-				return value.DefaultNilValue
-			}
-			break
-		}
-	}
-
-	for _, field := range structTemplate.Fields {
 		v.Visit(field)
 	}
 
@@ -108,7 +96,7 @@ func NewObjectValue(v *ReplVisitor, targetStruct string, targetToken antlr.Token
 
 		// then the arg exists
 		if prop.IsConst {
-			if arg.Value != value.DefaultUnInitializedValue && !allowReinitialize {
+			if (prop.Value != value.DefaultUnInitializedValue) && !allowReinitialize {
 				v.ErrorTable.NewSemanticError(targetToken, "El campo "+prop.Name+" es inmutable y ya fue inicializado")
 				return value.DefaultNilValue
 			}
