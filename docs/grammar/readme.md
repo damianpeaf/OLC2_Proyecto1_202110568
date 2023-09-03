@@ -1,333 +1,251 @@
+```g4
 
+lexer grammar TSwiftLexer;
 
-# Tokens and Regex
+// Skip tokens
 
-### Comments
+WS: [ \t\r\n]+ -> skip;
+COMMENT: '//' .*? ('\n' | EOF) -> skip;
+MULTILINE_COMMENT: '/*' .*? '*/' -> skip;
 
-* `"//".*`    -> SINGLE LINE COMMENT <br>
-* `[/][*][^*]*[*]+([^/*][^*]*[*]+)*[/]`  -> MULTI LINE COMMENT <br>
+// Stmts delimiter
+SEMICOLON: ';';
 
+// Keywords
 
-### Identifiers
-`([a-zA-ZÑñ]|("_"[a-zA-ZÑñ]))([a-zA-ZÑñ]|[0-9]|"_")*` -> ID
+// Declarations
 
-### Literals
-* `\'([^\r\n'\\]|\\[btnfr"'\\]|\\[0-9a-fA-F]{2}|\\u[0-9a-fA-F]{4})\' `-> CHAR_LITERAL <br>
-* `/^"(\\.|[^"\\])*"$/                                               `-> STRING_LITERAL <br>
-* `[0-9]+                                                            `-> INT_LITERAL <br>
-* `[0-9]+[.][0-9]+                                                   `-> DOUBLE_LITERAL <br>
+LET_KW: 'let';
+VAR_KW: 'var';
+FUNC_KW: 'func';
+STRUCT_KW: 'struct';
 
-### Types
+// Control flowa
 
-* `"int"`     -> INT <br>
-* `"double"`  -> DOUBLE <br>
-* `"string"`  -> STRING <br>
-* `"boolean"` -> BOOLEAN <br>
-* `"char"`    -> CHAR <br>
+IF_KW: 'if';
+ELSE_KW: 'else';
+SWITCH_KW: 'switch';
+CASE_KW: 'case';
+DEFAULT_KW: 'default';
+FOR_KW: 'for';
+WHILE_KW: 'while';
+BREAK_KW: 'break';
+CONTINUE_KW: 'continue';
+RETURN_KW: 'return';
+GUARD_KW: 'guard';
+INOUT_KW: 'inout';
+MUTATING_KW: 'mutating';
 
-### Operators
+// ...
+IN_KW: 'in';
 
-#### Arithmetic Operators
+// Types INTEGER_TYPE: 'Int'; FLOAT_TYPE: 'Float'; STRING_TYPE: 'String'; BOOL_TYPE: 'Bool';
+// CHARACTER_TYPE: 'Character';
 
-* `"+"` -> PLUS <br>
-* `"-"` -> MINUS <br>
-* `"*"` -> TIMES <br>
-* `"/"` -> DIVIDE <br>
-* `"^"` -> POWER <br>
-* `"%"` -> MOD <br>
+// Literals
 
-#### Relational Operators
+INTEGER_LITERAL: [0-9]+;
+FLOAT_LITERAL: [0-9]+ '.' [0-9]+;
+// STRING LITERAL WITH SCAPED SEQUENCES
+STRING_LITERAL: '"' (~["\r\n\\] | ESC_SEQ)* '"';
+BOOL_LITERAL: 'true' | 'false';
+NIL_LITERAL: 'nil';
 
-* `"=="` -> EQUALS <br>
-* `"!="` -> NOT_EQUAL <br>
-* `"<"`  -> LESS_THAN <br>
-* `"<="` -> LESS_THAN_OR_EQUAL <br>
-* `">"`  -> GREATER_THAN <br>
-* `">="` -> GREATER_THAN_OR_EQUAL <br>
+// Identifiers
+ID: [a-zA-Z_][a-zA-Z0-9_]*;
 
-##### Ternary Operator
+// Arithmetic operators
 
-* `"?"` -> INTERROGATION <br>
-* `":"` -> COLON <br>
+PLUS: '+';
+MINUS: '-';
+MULT: '*';
+DIV: '/';
+MOD: '%';
 
-#### Logical Operators
+// Assignment operators
 
-`* `"&&"` -> AND <br>
-`* `"\|\|"` -> OR <br>
-`* `"!"` -> NOT <br>
+EQUALS: '=';
+PLUS_EQUALS: '+=';
+MINUS_EQUALS: '-=';
 
-#### Grouping Operators
+// Comparison operators
 
-`"("` -> LPAREN <br>
-`")"` -> RPAREN <br>
+EQUALS_EQUALS: '==';
+NOT_EQUALS: '!=';
+LESS_THAN: '<';
+LESS_THAN_OR_EQUAL: '<=';
+GREATER_THAN: '>';
+GREATER_THAN_OR_EQUAL: '>=';
 
-#### End of Statement
+// Logical operators
 
-`";"` -> SEMICOLON <br>
+AND: '&&';
+OR: '||';
+NOT: '!';
+// split into two tokens?
 
-#### Assignment Operators
+// Delimiters
 
-`"="` -> EQUAL <br>
+LPAREN: '(';
+RPAREN: ')';
+LBRACE: '{';
+RBRACE: '}';
+LBRACK: '[';
+RBRACK: ']';
 
-#### Increment and Decrement Operators
+// Other
 
-`"++"` -> PLUS_PLUS <br>
-`"--"` -> MINUS_MINUS <br>
+COMMA: ',';
+DOT: '.';
+COLON: ':';
+ARROW: '->';
+INTERROGATION: '?';
+ANPERSAND: '&';
 
-#### Data Structure Operators
+// Error?
 
-`"["` -> LBRACKET <br>
-`"]"` -> RBRACKET <br>
-`"{"` -> LBRACE <br>
-`"}"` -> RBRACE <br>
+fragment ESC_SEQ: '\\' [btnfr"'\\];
 
-#### Keywords
+// ------------ Grammar ------------
 
-`"if"` -> IF <br>
-`"else"` -> ELSE <br>
-`"switch"` -> SWITCH <br>
-`"case"` -> CASE <br>
-`"default"` -> DEFAULT <br>
-`"while"` -> WHILE <br>
-`"for"` -> FOR <br>
-`"do"` -> DO <br>
-`"void"` -> VOID <br>
-`"true"` -> TRUE <br>
-`"false"` -> FALSE <br>
+parser grammar TSwiftLanguage;
 
-#### Flow Control
+options {
+	tokenVocab = TSwiftLexer;
+	// language = Swift; superClass = SwiftParserBaseListener;
+}
 
-`"break"` -> BREAK <br>
-`"continue"` -> CONTINUE <br>
-`"return"` -> RETURN <br>
+// make stmt* a new rule
+program: (stmt)* EOF?;
 
-#### Other Operators
+delimiter: SEMICOLON? | EOF;
 
-`","` -> COMMA <br>
-`"."` -> DOT <br>
+stmt:
+	decl_stmt delimiter
+	| assign_stmt delimiter
+	| transfer_stmt delimiter
+	| if_stmt
+	| switch_stmt
+	| while_stmt
+	| for_stmt
+	| guard_stmt
+	| func_call delimiter
+	| vector_func delimiter
+	| func_dcl
+	| strct_dcl;
 
+decl_stmt:
+	var_type ID COLON type EQUALS expr		# TypeValueDecl
+	| var_type ID EQUALS expr				# ValueDecl
+	| var_type ID COLON type INTERROGATION	# TypeDecl;
 
-# Precedence
+vector_expr:
+	LBRACK (expr (COMMA expr)*)? RBRACK # VectorItemList;
 
-In ascending order of precedence:
+vector_item: id_pattern (LBRACK expr RBRACK)+ # VectorItem;
 
-1. Unary Not `[-]` Right Associative
-1. Increment `[++]` Right Associative
-1. Decrement `[--]` Right Associative
-2. Parentheses `[ ( ) ]` Left Associative
-3. Power `[^]` Non Associative
-4. Multiplication `[*]` Left Associative
-4. Division `[/]` Left Associative
-4. Modulus `[%]` Left Associative
-5. Addition `[+]` Left Associative
-5. Subtraction `[-]` Left Associative
-6. Relational Operators `[==, !=, <, <=, >, >=]` Left Associative
-7. Not `[!]` Right Associative
-8. And `[&&]` Left Associative
-8. Or `[||]` Left Associative
-9. Ternary `[?:]` Left Associative
+vector_prop: vector_item DOT id_pattern # VectorProp;
+vector_func: vector_item DOT func_call # VectorFunc;
 
+repeating:
+	(vector_type | matrix_type) LPAREN ID COLON expr COMMA ID COLON expr RPAREN;
 
-# Grammar
+var_type: VAR_KW | LET_KW;
 
-- Program start
+type: ID | vector_type | matrix_type;
+
+vector_type: LBRACK ID RBRACK;
+
+matrix_type: aux_matrix_type | LBRACK LBRACK ID RBRACK RBRACK;
+
+aux_matrix_type: LBRACK matrix_type RBRACK;
+
+assign_stmt:
+	id_pattern EQUALS expr											# DirectAssign
+	| id_pattern op = (PLUS_EQUALS | MINUS_EQUALS) expr				# ArithmeticAssign
+	| vector_item op = (PLUS_EQUALS | MINUS_EQUALS | EQUALS) expr	# VectorAssign;
+
+id_pattern: ID (DOT ID)* # IdPattern;
+
+literal:
+	INTEGER_LITERAL		# IntLiteral
+	| FLOAT_LITERAL		# FloatLiteral
+	| STRING_LITERAL	# StringLiteral
+	| BOOL_LITERAL		# BoolLiteral
+	| NIL_LITERAL		# NilLiteral;
+
+expr:
+	LPAREN expr RPAREN									# ParenExp // (a)
+	| func_call											# FuncCallExp // a.a.a()
+	| id_pattern										# IdExp // a.a.a
+	| vector_item										# VectorItemExp // a.a.a[0]
+	| vector_prop										# VectorPropExp // a[0].a.a
+	| vector_func										# VectorFuncExp // a[0].a.a()
+	| literal											# LiteralExp // 1, 1.0, "a", true, nil
+	| vector_expr										# VectorExp // [1, 2, 3]
+	| repeating											# RepeatingExp // [ Int ] (repeating: 0, count: 3)
+	| struct_vector										# StructVectorExp // [ Int ]()	
+	| op = (NOT | MINUS) expr							# UnaryExp // !a, -a	
+	| left = expr op = (MULT | DIV | MOD) right = expr	# BinaryExp // a * b, a / b, a % b
+	| left = expr op = (PLUS | MINUS) right = expr		# BinaryExp // a + b, a - b
+	| left = expr op = (
+		LESS_THAN
+		| LESS_THAN_OR_EQUAL
+		| GREATER_THAN
+		| GREATER_THAN_OR_EQUAL
+	) right = expr													# BinaryExp // a < b, a <= b, a > b, a >= b
+	| left = expr op = (EQUALS_EQUALS | NOT_EQUALS) right = expr	# BinaryExp // a == b, a != b
+	| left = expr op = AND right = expr								# BinaryExp // a && b
+	| left = expr op = OR right = expr								# BinaryExp; // a || b
+// StructMethodCallExp, StructPropertyCallExp, FunctionCallExp, vector, matrix;  (++, --)?
+
+if_stmt: if_chain (ELSE_KW if_chain)* else_stmt? # IfStmt;
+
+if_chain: IF_KW expr LBRACE stmt* RBRACE # IfChain;
+else_stmt: ELSE_KW LBRACE stmt* RBRACE # ElseStmt;
+
+switch_stmt:
+	SWITCH_KW expr LBRACE switch_case* default_case? RBRACE # SwitchStmt;
+
+switch_case: CASE_KW expr COLON stmt* # SwitchCase;
+
+default_case: DEFAULT_KW COLON stmt* # DefaultCase;
+
+while_stmt: WHILE_KW expr LBRACE stmt* RBRACE # WhileStmt;
+
+for_stmt:
+	FOR_KW ID IN_KW (expr | range) LBRACE stmt* RBRACE # ForStmt;
+
+range: expr DOT DOT DOT expr # NumericRange;
+
+guard_stmt:
+	GUARD_KW expr ELSE_KW LBRACE stmt* RBRACE # GuardStmt;
+
+transfer_stmt:
+	RETURN_KW expr?	# ReturnStmt
+	| BREAK_KW		# BreakStmt
+	| CONTINUE_KW	# ContinueStmt;
+
+func_call: id_pattern LPAREN arg_list? RPAREN # FuncCall;
+
+// external names -> num: value, num2: value2
+arg_list: func_arg (COMMA func_arg)* # ArgList;
+func_arg: (ID COLON)? (ANPERSAND)? (id_pattern | expr) # FuncArg; // 
+
+func_dcl:
+	FUNC_KW ID LPAREN param_list? RPAREN (ARROW type)? LBRACE stmt* RBRACE # FuncDecl;
+
+param_list: func_param (COMMA func_param)* # ParamList;
+func_param: ID? ID COLON INOUT_KW? type # FuncParam;
+
+// * Structs
+
+strct_dcl: STRUCT_KW ID LBRACE struct_prop* RBRACE # StructDecl;
+
+struct_prop:
+	var_type ID (COLON type)? (EQUALS expr)?	# StructAttr
+	| MUTATING_KW? func_dcl						# StructFunc;
+
+struct_vector: LBRACK ID RBRACK LPAREN RPAREN # StructVector;
+
 ```
-Program    -> Statements EOF
-            |  EOF
-``` 
-
-- Statements
-```
-Statements -> NormalStatement FlowControl
-            |  NormalStatement
-            |  FlowControl 
-```
-
-- Normal Statements
-```
-NormalStatement -> NormalStatement Statement
-                 | Statement
-```
-
-- Flow Control statements
-```
-FlowControl -> BREAK SEMICOLON
-             | CONTINUE SEMICOLON
-             | RETURN SEMICOLON
-             | RETURN Expression SEMICOLON
-```
-
-- Posible statements
-```
-Statement -> Declaration
-           | Assignment
-           | If
-           | Switch
-           | While
-           | For
-           | Do
-           | SubroutineCall
-           | SubroutineDeclaration
-```
-          
-- Types
-```
-Type -> INT
-      | DOUBLE
-      | STRING
-      | BOOLEAN
-      | CHAR
-```
-
-- Variable declaration
-```
-Declaration -> Type ID SEMICOLON
-             | Type ID EQUAL Expression SEMICOLON
-```
-
-- Variable assignment
-```
-Assignment -> ID EQUAL Expression SEMICOLON
-            | ID PLUS_PLUS SEMICOLON
-            | ID MINUS_MINUS SEMICOLON
-```
-
-- If statement
-```
-If -> IF LPAREN Expression RPAREN LBRACE Statements RBRACE
-    | IF LPAREN Expression RPAREN LBRACE Statements RBRACE IfChain
-```
-
-- If chain (else, else if)
-```
-IfChain -> ELSE LBRACE Statements RBRACE
-         | ELSE IF LPAREN Expression RPAREN LBRACE Statements RBRACE IfChain
-```
-
-- Switch statement
-```
-Switch -> SWITCH LPAREN Expression RPAREN LBRACE Cases RBRACE
-```
-
-- Switch body
-```
-Cases -> CasesList 
-       | CasesList Default
-```
-
-- Cases list
-```
-CasesList -> CasesList Case
-           | Case
-```
-
-- Case
-```
-Case -> CASE Expression COLON Statements
-```
-
-- While statement
-```
-While -> WHILE LPAREN Expression RPAREN LBRACE Statements RBRACE
-```
-
-- For statement
-```
-For -> FOR LPAREN ForInit SEMICOLON ForCondition SEMICOLON ForUpdate RPAREN LBRACE Statements RBRACE
-```
-
-- For, init statement
-```
-ForInit -> Declaration
-         | Assignment
-         | SubroutineCall ???
-```
-
-- For condition statement
-```
-ForCondition -> Expression
-```
-
-- For update statement
-```
-ForUpdate -> Assignment
-```
-
-- DoWhile statement
-```
-Do -> DO LBRACE Statements RBRACE WHILE LPAREN Expression RPAREN SEMICOLON
-```
-
-- Subroutine call
-```
-SubroutineCall -> ID LPAREN RPAREN SEMICOLON
-                | ID LPAREN Arguments RPAREN SEMICOLON
-```
-
-- Object subroutine call
-```
-ObjectSubroutineCall -> ID DOT SubroutineCall // !!!
-```
-
-- Arguments of subroutine call
-```
-Arguments -> Expression
-           | Arguments COMMA Expression
-```
-
-
-- Subroutine declaration
-```
-SubroutineDeclaration -> MethodDeclaration
-                       | FunctionDeclaration
-```
-
-- Method declaration
-```
-MethodDeclaration -> VOID ID LPAREN RPAREN LBRACE Statements RBRACE
-                   | VOID ID LPAREN SubroutineArguments RPAREN LBRACE Statements RBRACE
-```
-
-- Function declaration
-```
-FunctionDeclaration -> Type ID LPAREN RPAREN LBRACE Statements RBRACE
-                     | Type ID LPAREN SubroutineArguments RPAREN LBRACE Statements RBRACE
-```
-
-- Arguments of subroutine declaration
-```
-SubroutineArguments -> Type ID
-                     | FunctionArguments COMMA Type ID
-```
-
-- Expression
-```
-Expression -> Expression PLUS Expression
-            | Expression MINUS Expression
-            | Expression TIMES Expression
-            | Expression DIVIDE Expression
-            | Expression POWER Expression
-            | Expression MOD Expression
-            | MINUS Expression               PREC: UNARY_OPERATOR
-            | LPAREN Expression RPAREN
-            | Expression EQUALS Expression
-            | Expression NOT_EQUAL Expression
-            | Expression LESS_THAN Expression
-            | Expression LESS_THAN_OR_EQUAL Expression
-            | Expression GREATER_THAN Expression
-            | Expression GREATER_THAN_OR_EQUAL Expression
-            | Expression AND Expression
-            | Expression OR Expression
-            | NOT Expression
-            | Expression INTERROGATION Expression COLON Expression PREC: TERNARY_OPERATOR
-            | ID
-            | INT_LITERAL
-            | DOUBLE_LITERAL
-            | STRING_LITERAL
-            | CHAR_LITERAL
-            | TRUE
-            | FALSE
-            | ID PLUS_PLUS
-            | ID MINUS_MINUS
-```
-
