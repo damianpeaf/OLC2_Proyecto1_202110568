@@ -444,7 +444,7 @@ func (v *ReplVisitor) VisitDirectAssign(ctx *compiler.DirectAssignContext) inter
 		canMutate := true
 
 		if v.ScopeTrace.CurrentScope.isStruct {
-			canMutate = v.ScopeTrace.CurrentScope.IsMutating
+			canMutate = v.ScopeTrace.IsMutatingEnvironment()
 		}
 
 		ok, msg := variable.Assign(varValue, canMutate)
@@ -488,7 +488,7 @@ func (v *ReplVisitor) VisitArithmeticAssign(ctx *compiler.ArithmeticAssignContex
 		canMutate := true
 
 		if v.ScopeTrace.CurrentScope.isStruct {
-			canMutate = v.ScopeTrace.CurrentScope.IsMutating
+			canMutate = v.ScopeTrace.IsMutatingEnvironment()
 		}
 
 		ok, msg = variable.Assign(varValue, canMutate)

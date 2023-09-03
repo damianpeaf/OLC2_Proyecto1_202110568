@@ -300,6 +300,24 @@ func (s *BaseScope) Reset() {
 	s.functions = make(map[string]value.IVOR)
 }
 
+func (s *BaseScope) IsMutatingScope() bool {
+	aux := s
+
+	for {
+		if aux.IsMutating {
+			return true
+		}
+
+		if aux.parent == nil {
+			break
+		}
+
+		aux = aux.parent
+	}
+
+	return false
+}
+
 func NewGlobalScope() *BaseScope {
 
 	// register built-in functions
@@ -345,7 +363,6 @@ func (s *ScopeTrace) PushScope(name string) *BaseScope {
 }
 
 func (s *ScopeTrace) PopScope() {
-	// ? implement new method, sending scope as pointer, and make CurrentScope equals the parent
 	s.CurrentScope = s.CurrentScope.Parent()
 }
 
@@ -367,6 +384,10 @@ func (s *ScopeTrace) AddFunction(name string, function value.IVOR) (bool, string
 
 func (s *ScopeTrace) GetFunction(name string) (value.IVOR, string) {
 	return s.CurrentScope.GetFunction(name)
+}
+
+func (s *ScopeTrace) IsMutatingEnvironment() bool {
+	return s.CurrentScope.IsMutatingScope()
 }
 
 func NewScopeTrace() *ScopeTrace {
