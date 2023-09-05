@@ -114,7 +114,8 @@ export const Console = () => {
                     terminalContent.split('\n').map((line, index) => (
                         <React.Fragment key={index}>
                             <pre className='whitespace-pre-wrap text-xl'>
-                                {line.replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
+
+                                {line.trim() === '' ? <br /> : line.replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')}
                             </pre>
                         </React.Fragment>
                     ))

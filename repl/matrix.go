@@ -1,6 +1,8 @@
 package repl
 
-import "main/value"
+import (
+	"main/value"
+)
 
 type MatrixValue struct {
 	*VectorValue
@@ -34,14 +36,19 @@ func (v *MatrixValue) ValidIndexes(indexes []int) bool {
 		switch s := item.(type) {
 		case *VectorValue:
 			pivot = s
+
+			if i == len(indexes)-1 {
+				return true
+			}
+
 		case *MatrixValue:
 			pivot = s.VectorValue
 		default:
 			if i != len(indexes)-1 {
 				return false
+			} else {
+				return true
 			}
-
-			return true
 		}
 	}
 
@@ -64,6 +71,11 @@ func (v *MatrixValue) Get(index []int) value.IVOR {
 		switch s := item.(type) {
 		case *VectorValue:
 			pivot = s
+
+			if i == len(index)-1 {
+				return pivot
+			}
+
 		case *MatrixValue:
 			pivot = s.VectorValue
 		default:

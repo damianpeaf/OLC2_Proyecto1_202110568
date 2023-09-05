@@ -401,7 +401,7 @@ func (v *ReplVisitor) VisitVectorItem(ctx *compiler.VectorItemContext) interface
 		case *MatrixValue:
 
 			if !matrixValue.ValidIndexes(indexes) {
-				v.ErrorTable.NewSemanticError(ctx.GetStart(), "El indice de la matriz esta fuera de rango")
+				v.ErrorTable.NewSemanticError(ctx.GetStart(), "El indice "+fmt.Sprint(indexes)+" esta fuera de rango")
 				return nil
 			}
 
