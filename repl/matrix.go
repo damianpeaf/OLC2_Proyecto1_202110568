@@ -43,6 +43,11 @@ func (v *MatrixValue) ValidIndexes(indexes []int) bool {
 
 		case *MatrixValue:
 			pivot = s.VectorValue
+
+			if i == len(indexes)-1 {
+				return true
+			}
+
 		default:
 			if i != len(indexes)-1 {
 				return false
@@ -78,6 +83,10 @@ func (v *MatrixValue) Get(index []int) value.IVOR {
 
 		case *MatrixValue:
 			pivot = s.VectorValue
+
+			if i == len(index)-1 {
+				return pivot
+			}
 		default:
 			return item
 		}
